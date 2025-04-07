@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cherokee Syllabary Translator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .input-section, .output-section {
+            margin-bottom: 20px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .output {
+            font-size: 18px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 150px;
+            background-color: #f9f9f9;
+        }
+        
+        .info-section {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #e8f4f8;
+            border-radius: 4px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Cherokee Syllabary Translator</h1>
+        <p>Translate Latin characters (English) to Cherokee syllabary</p>
+    </header>
+    
+    <div class="container">
+        <div class="input-section">
+            <h2>Enter Text in Latin (English) Characters</h2>
+            <p>Use the romanization system where "v" represents the "uh" sound</p>
+            <textarea id="inputText" placeholder="Example: osiyo (hello)"></textarea>
+            <button onclick="translateText()">Translate</button>
+        </div>
+        
+        <div class="output-section">
+            <h2>Cherokee Syllabary Output</h2>
+            <div class="output" id="outputText"></div>
+        </div>
+        
+        <div class="info-section">
+            <h2>About Cherokee Syllabary</h2>
+            <p>The Cherokee syllabary is a syllabary invented by Sequoyah in the late 1810s and early 1820s to write the Cherokee language. Instead of letters representing sounds, each character represents a syllable.</p>
+            
+            <h3>Some Common Cherokee Words</h3>
+            <table>
+                <tr>
+                    <th>English</th>
+                    <th>Latin Characters</th>
+                    <th>Cherokee Syllabary</th>
+                </tr>
+                <tr>
+                    <td>Hello</td>
+                    <td>osiyo</td>
+                    <td>ᎣᏏᏲᎢ</td>
+                </tr>
+                <tr>
+                    <td>Thank you</td>
+                    <td>wado</td>
+                    <td>ᏩᏙ</td>
+                </tr>
+                <tr>
+                    <td>Yes</td>
+                    <td>uwoduhi</td>
+                    <td>ᎤᏬᏚᎯ</td>
+                </tr>
+                <tr>
+                    <td>No</td>
+                    <td>howa</td>
+                    <td>ᎰᏩ</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Created for educational purposes. This translator uses a simplified system and may not capture all nuances of the Cherokee language.</p>
+    </footer>
+
+    <script>
+        // Mapping of Latin (Romanized) characters to Cherokee syllabary
+        const syllabaryMap = {
+            // Vowels
+            'a': 'Ꭰ', 'e': 'Ꭱ', 'i': 'Ꭲ', 'o': 'Ꭳ', 'u': 'Ꭴ', 'v': 'Ꭵ',
+            
+            // G- sounds
+            'ga': 'Ꭶ', 'ge': 'Ꭸ', 'gi': 'Ꭹ', 'go': 'Ꭺ', 'gu': 'Ꭻ', 'gv': 'Ꭼ',
+
+            // K- sounds
+            'ka': 'Ꭷ',
+            
+            // H- sounds
+            'ha': 'Ꭽ', 'he': 'Ꭾ', 'hi': 'Ꭿ', 'ho': 'Ꮀ', 'hu': 'Ꮁ', 'hv': 'Ꮂ',
+            
+            // L- sounds
+            'la': 'Ꮃ', 'le': 'Ꮄ', 'li': 'Ꮅ', 'lo': 'Ꮆ', 'lu': 'Ꮇ', 'lv': 'Ꮈ',
+            
+            // M- sounds
+            'ma': 'Ꮉ', 'me': 'Ꮊ', 'mi': 'Ꮋ', 'mo': 'Ꮌ', 'mu': 'Ꮍ',
+            
+            // N- sounds
+            'na': 'Ꮎ', 'nah': 'Ꮐ', 'ne': 'Ꮑ', 'ni': 'Ꮒ', 'no': 'Ꮓ', 'nu': 'Ꮔ', 'nv': 'Ꮕ',
+
+            // HN- sounds
+            'hna': 'Ꮏ',
+            
+            // Qu- sounds (kw- in Cherokee)
+            'qua': 'Ꮖ', 'que': 'Ꮗ', 'qui': 'Ꮘ', 'quo': 'Ꮙ', 'quu': 'Ꮚ', 'quv': 'Ꮛ',
+            'kwa': 'Ꮖ', 'kwe': 'Ꮗ', 'kwi': 'Ꮘ', 'kwo': 'Ꮙ', 'kwu': 'Ꮚ', 'kwv': 'Ꮛ',
+            
+            // S- sounds
+            'sa': 'Ꮜ', 's': 'Ꮝ', 'se': 'Ꮞ', 'si': 'Ꮟ', 'so': 'Ꮠ', 'su': 'Ꮡ', 'sv': 'Ꮢ',
+            
+            // D- sounds
+            'da': 'Ꮣ', 'de': 'Ꮥ', 'di': 'Ꮧ', 'do': 'Ꮩ', 'du': 'Ꮪ', 'dv': 'Ꮫ',
+            
+            // T- sounds
+            'ta': 'Ꮤ', 'te': 'Ꮦ', 'ti': 'Ꮨ', 'to': 'Ꮩ', 'tu': 'Ꮪ', 'tv': 'Ꮫ',
+
+            // Dl- sounds
+            'dla': 'Ꮬ',
+            
+            // Tl- sounds
+            'tla': 'Ꮭ', 'tle': 'Ꮮ', 'tli': 'Ꮯ', 'tlo': 'Ꮰ', 'tlu': 'Ꮱ', 'tlv': 'Ꮲ',
+            
+            // Ts- sounds
+            'tsa': 'Ꮳ', 'tse': 'Ꮴ', 'tsi': 'Ꮵ', 'tso': 'Ꮶ', 'tsu': 'Ꮷ', 'tsv': 'Ꮸ',
+            
+            // W- sounds
+            'wa': 'Ꮹ', 'we': 'Ꮺ', 'wi': 'Ꮻ', 'wo': 'Ꮼ', 'wu': 'Ꮽ', 'wv': 'Ꮾ',
+            
+            // Y- sounds
+            'ya': 'Ꮿ', 'ye': 'Ᏸ', 'yi': 'Ᏹ', 'yo': 'Ᏺ', 'yu': 'Ᏻ', 'yv': 'Ᏼ',
+            
+            // Special characters
+            ' ': ' ', '.': '.', ',': ',', '!': '!', '?': '?', ';': ';', ':': ':',
+
+            '-': ''
+        };
+
+        function translateText() {
+            const inputText = document.getElementById('inputText').value.toLowerCase();
+            let outputText = '';
+            let i = 0;
+            
+            while (i < inputText.length) {
+                let found = false;
+                
+                // Check for two-letter combinations first (like "ga", "hi", etc.)
+                if (i + 1 < inputText.length) {
+                    const twoLetters = inputText.substring(i, i + 2);
+                    if (syllabaryMap[twoLetters]) {
+                        outputText += syllabaryMap[twoLetters];
+                        i += 2;
+                        found = true;
+                        continue;
+                    }
+                }
+                
+                // Check for three-letter combinations (like "tsa", "tla", etc.)
+                if (i + 2 < inputText.length) {
+                    const threeLetters = inputText.substring(i, i + 3);
+                    if (syllabaryMap[threeLetters]) {
+                        outputText += syllabaryMap[threeLetters];
+                        i += 3;
+                        found = true;
+                        continue;
+                    }
+                }
+                
+                // Check for single letters
+                const oneLetter = inputText[i];
+                if (syllabaryMap[oneLetter]) {
+                    outputText += syllabaryMap[oneLetter];
+                    found = true;
+                } else {
+                    // If not found in our mapping, keep the original character
+                    outputText += oneLetter;
+                }
+                
+                i++;
+            }
+            
+            document.getElementById('outputText').textContent = outputText;
+        }
+    </script>
+</body>
+</html>
