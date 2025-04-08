@@ -232,7 +232,7 @@
                 // Check for two-letter combinations first (like "ga", "hi", etc.)
                 if (i + 1 < inputText.length) {
                     const twoLetters = inputText.substring(i, i + 2);
-                    if (syllabaryMap[twoLetters]) {
+                    if (twoLetters in syllabaryMap) {
                         outputText += syllabaryMap[twoLetters];
                         i += 2;
                         found = true;
@@ -243,7 +243,7 @@
                 // Check for three-letter combinations (like "tsa", "tla", etc.)
                 if (i + 2 < inputText.length) {
                     const threeLetters = inputText.substring(i, i + 3);
-                    if (syllabaryMap[threeLetters]) {
+                    if (threeLetters in syllabaryMap) {
                         outputText += syllabaryMap[threeLetters];
                         i += 3;
                         found = true;
@@ -253,7 +253,7 @@
                 
                 // Check for single letters
                 const oneLetter = inputText[i];
-                if (syllabaryMap[oneLetter]) {
+                if (oneLetter in syllabaryMap) {
                     outputText += syllabaryMap[oneLetter];
                     found = true;
                 } else {
