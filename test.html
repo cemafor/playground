@@ -113,7 +113,7 @@
             <h2>Enter Text in Latin (English) Characters</h2>
             <p>Use the romanization system where "v" represents the "uh" sound</p>
             <textarea id="inputText" placeholder="Example: osiyo (hello)"></textarea>
-            <button onclick="translateText()">Translate</button>
+            <button id="btn" onclick="translateText()">Translate</button>
         </div>
         
         <div class="output-section">
@@ -220,6 +220,13 @@
 
             '-': ''
         };
+
+        document.getElementById('inputText').addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.getElementById("btn").click();
+            }
+        });
 
         function translateText() {
             const inputText = document.getElementById('inputText').value.toLowerCase();
