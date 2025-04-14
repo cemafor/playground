@@ -35,7 +35,7 @@
         }
         
         textarea {
-            width: 100%;
+            width: 95%;
             height: 150px;
             padding: 10px;
             border: 1px solid #ddd;
@@ -114,11 +114,17 @@
             <p>Use the romanization system where "v" represents the "uh" sound</p>
             <textarea id="inputText" placeholder="Example: osiyo (hello)"></textarea>
             <button id="btn" onclick="translateText()">Translate</button>
+            <input type="checkbox" id="spaced">
+            <label for="spaced">Do space thing?</label>
         </div>
         
         <div class="output-section">
             <h2>Cherokee Syllabary Output</h2>
             <div class="output" id="outputText"></div>
+        </div>
+        <div class="output-section" id="cleanedDiv" hidden>
+            <h2>Cleaned Latin Text Output</h2>
+            <div class="output" id="cleanedText"></div>
         </div>
         
         <div class="info-section">
@@ -165,59 +171,40 @@
         const syllabaryMap = {
             // Vowels
             'a': 'Ꭰ', 'e': 'Ꭱ', 'i': 'Ꭲ', 'o': 'Ꭳ', 'u': 'Ꭴ', 'v': 'Ꭵ',
-            
             // G- sounds
             'ga': 'Ꭶ', 'ge': 'Ꭸ', 'gi': 'Ꭹ', 'go': 'Ꭺ', 'gu': 'Ꭻ', 'gv': 'Ꭼ',
-
             // K- sounds
             'ka': 'Ꭷ',
-            
             // H- sounds
             'ha': 'Ꭽ', 'he': 'Ꭾ', 'hi': 'Ꭿ', 'ho': 'Ꮀ', 'hu': 'Ꮁ', 'hv': 'Ꮂ',
-            
             // L- sounds
             'la': 'Ꮃ', 'le': 'Ꮄ', 'li': 'Ꮅ', 'lo': 'Ꮆ', 'lu': 'Ꮇ', 'lv': 'Ꮈ',
-            
             // M- sounds
             'ma': 'Ꮉ', 'me': 'Ꮊ', 'mi': 'Ꮋ', 'mo': 'Ꮌ', 'mu': 'Ꮍ',
-            
             // N- sounds
             'na': 'Ꮎ', 'nah': 'Ꮐ', 'ne': 'Ꮑ', 'ni': 'Ꮒ', 'no': 'Ꮓ', 'nu': 'Ꮔ', 'nv': 'Ꮕ',
-
             // HN- sounds
             'hna': 'Ꮏ',
-            
             // Qu- sounds (kw- in Cherokee)
             'qua': 'Ꮖ', 'que': 'Ꮗ', 'qui': 'Ꮘ', 'quo': 'Ꮙ', 'quu': 'Ꮚ', 'quv': 'Ꮛ',
             'kwa': 'Ꮖ', 'kwe': 'Ꮗ', 'kwi': 'Ꮘ', 'kwo': 'Ꮙ', 'kwu': 'Ꮚ', 'kwv': 'Ꮛ',
-            
             // S- sounds
             'sa': 'Ꮜ', 's': 'Ꮝ', 'se': 'Ꮞ', 'si': 'Ꮟ', 'so': 'Ꮠ', 'su': 'Ꮡ', 'sv': 'Ꮢ',
-            
             // D- sounds
             'da': 'Ꮣ', 'de': 'Ꮥ', 'di': 'Ꮧ', 'do': 'Ꮩ', 'du': 'Ꮪ', 'dv': 'Ꮫ',
-            
             // T- sounds
             'ta': 'Ꮤ', 'te': 'Ꮦ', 'ti': 'Ꮨ', 'to': 'Ꮩ', 'tu': 'Ꮪ', 'tv': 'Ꮫ',
-
             // Dl- sounds
             'dla': 'Ꮬ',
-            
             // Tl- sounds
             'tla': 'Ꮭ', 'tle': 'Ꮮ', 'tli': 'Ꮯ', 'tlo': 'Ꮰ', 'tlu': 'Ꮱ', 'tlv': 'Ꮲ',
-            
             // Ts- sounds
             'tsa': 'Ꮳ', 'tse': 'Ꮴ', 'tsi': 'Ꮵ', 'tso': 'Ꮶ', 'tsu': 'Ꮷ', 'tsv': 'Ꮸ',
-            
             // W- sounds
             'wa': 'Ꮹ', 'we': 'Ꮺ', 'wi': 'Ꮻ', 'wo': 'Ꮼ', 'wu': 'Ꮽ', 'wv': 'Ꮾ',
-            
             // Y- sounds
             'ya': 'Ꮿ', 'ye': 'Ᏸ', 'yi': 'Ᏹ', 'yo': 'Ᏺ', 'yu': 'Ᏻ', 'yv': 'Ᏼ',
-            
-            // Special characters
-            ' ': ' ', '.': '.', ',': ',', '!': '!', '?': '?', ';': ';', ':': ':',
-
+            // Dash is used to separate syllabary characters
             '-': ''
         };
 
@@ -228,8 +215,18 @@
             }
         });
 
+        document.getElementById('spaced').addEventListener("change", function(event) {
+            document.getElementById('cleanedDiv').hidden = !event.currentTarget.checked;
+        })
+
         function translateText() {
-            const inputText = document.getElementById('inputText').value.toLowerCase();
+            inputText = document.getElementById('inputText').value.toLowerCase();
+            if (document.getElementById('spaced').checked) {
+                inputText = inputText.replaceAll(' ', '-');
+                inputText = inputText.replaceAll('--', ' ');
+                document.getElementById('cleanedText').textContent = inputText;
+            }
+
             let outputText = '';
             let i = 0;
             
