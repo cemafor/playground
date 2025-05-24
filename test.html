@@ -170,40 +170,43 @@
         // Mapping of Latin (Romanized) characters to Cherokee syllabary
         const syllabaryMap = {
             // Vowels
-            'a': 'Ꭰ', 'e': 'Ꭱ', 'i': 'Ꭲ', 'o': 'Ꭳ', 'u': 'Ꭴ', 'v': 'Ꭵ',
+            'a': 'Ꭰ',     'e': 'Ꭱ',     'i': 'Ꭲ',     'o': 'Ꭳ',      'u': 'Ꭴ',      'v': 'Ꭵ',
             // G- sounds
-            'ga': 'Ꭶ', 'ge': 'Ꭸ', 'gi': 'Ꭹ', 'go': 'Ꭺ', 'gu': 'Ꭻ', 'gv': 'Ꭼ',
+            'ga': 'Ꭶ',    'ge': 'Ꭸ',     'gi': 'Ꭹ',    'go': 'Ꭺ',     'gu': 'Ꭻ',     'gv': 'Ꭼ',
             // K- sounds
             'ka': 'Ꭷ',
             // H- sounds
-            'ha': 'Ꭽ', 'he': 'Ꭾ', 'hi': 'Ꭿ', 'ho': 'Ꮀ', 'hu': 'Ꮁ', 'hv': 'Ꮂ',
+            'ha': 'Ꭽ',    'he': 'Ꭾ',     'hi': 'Ꭿ',   'ho': 'Ꮀ',      'hu': 'Ꮁ',     'hv': 'Ꮂ',
             // L- sounds
-            'la': 'Ꮃ', 'le': 'Ꮄ', 'li': 'Ꮅ', 'lo': 'Ꮆ', 'lu': 'Ꮇ', 'lv': 'Ꮈ',
+            'la': 'Ꮃ',   'le': 'Ꮄ',     'li': 'Ꮅ',    'lo': 'Ꮆ',     'lu': 'Ꮇ',     'lv': 'Ꮈ',
             // M- sounds
-            'ma': 'Ꮉ', 'me': 'Ꮊ', 'mi': 'Ꮋ', 'mo': 'Ꮌ', 'mu': 'Ꮍ',
+            'ma': 'Ꮉ',   'me': 'Ꮊ',     'mi': 'Ꮋ',    'mo': 'Ꮌ',     'mu': 'Ꮍ',     'mv': '?'
             // N- sounds
-            'na': 'Ꮎ', 'nah': 'Ꮐ', 'ne': 'Ꮑ', 'ni': 'Ꮒ', 'no': 'Ꮓ', 'nu': 'Ꮔ', 'nv': 'Ꮕ',
+            'nah': 'Ꮐ',
+            'na': 'Ꮎ',    'ne': 'Ꮑ',    'ni': 'Ꮒ',    'no': 'Ꮓ',      'nu': 'Ꮔ',    'nv': 'Ꮕ',
             // HN- sounds
             'hna': 'Ꮏ',
             // Qu- sounds (kw- in Cherokee)
-            'qua': 'Ꮖ', 'que': 'Ꮗ', 'qui': 'Ꮘ', 'quo': 'Ꮙ', 'quu': 'Ꮚ', 'quv': 'Ꮛ',
-            'kwa': 'Ꮖ', 'kwe': 'Ꮗ', 'kwi': 'Ꮘ', 'kwo': 'Ꮙ', 'kwu': 'Ꮚ', 'kwv': 'Ꮛ',
+            'qua': 'Ꮖ',   'que': 'Ꮗ',   'qui': 'Ꮘ',   'quo': 'Ꮙ',   'quu': 'Ꮚ',   'quv': 'Ꮛ',
+            'kwa': 'Ꮖ',   'kwe': 'Ꮗ',   'kwi': 'Ꮘ',   'kwo': 'Ꮙ',   'kwu': 'Ꮚ',   'kwv': 'Ꮛ',
             // S- sounds
-            'sa': 'Ꮜ', 's': 'Ꮝ', 'se': 'Ꮞ', 'si': 'Ꮟ', 'so': 'Ꮠ', 'su': 'Ꮡ', 'sv': 'Ꮢ',
+            's': 'Ꮝ',
+            'sa': 'Ꮜ',    'se': 'Ꮞ',     'si': 'Ꮟ',    'so': 'Ꮠ',      'su': 'Ꮡ',    'sv': 'Ꮢ',
             // D- sounds
-            'da': 'Ꮣ', 'de': 'Ꮥ', 'di': 'Ꮧ', 'do': 'Ꮩ', 'du': 'Ꮪ', 'dv': 'Ꮫ',
+            'da': 'Ꮣ',    'de': 'Ꮥ',     'di': 'Ꮧ',    'do': 'Ꮩ',      'du': 'Ꮪ',     'dv': 'Ꮫ',
             // T- sounds
-            'ta': 'Ꮤ', 'te': 'Ꮦ', 'ti': 'Ꮨ', 'to': 'Ꮩ', 'tu': 'Ꮪ', 'tv': 'Ꮫ',
+            'ta': 'Ꮤ',    'te': 'Ꮦ',    'ti': 'Ꮨ',    'to': 'Ꮩ',      'tu': 'Ꮪ',     'tv': 'Ꮫ',
             // Dl- sounds
-            'dla': 'Ꮬ',
+            'dla': 'Ꮬ',                                                               'dlv': 'Ꮲ',
             // Tl- sounds
-            'tla': 'Ꮭ', 'tle': 'Ꮮ', 'tli': 'Ꮯ', 'tlo': 'Ꮰ', 'tlu': 'Ꮱ', 'tlv': 'Ꮲ',
+            'tla': 'Ꮭ',   'tle': 'Ꮮ',    'tli': 'Ꮯ',   'tlo': 'Ꮰ',     'tlu': 'Ꮱ',   'tlv': 'Ꮲ',
             // Ts- sounds
-            'tsa': 'Ꮳ', 'tse': 'Ꮴ', 'tsi': 'Ꮵ', 'tso': 'Ꮶ', 'tsu': 'Ꮷ', 'tsv': 'Ꮸ',
+            'tsa': 'Ꮳ',   'tse': 'Ꮴ',   'tsi': 'Ꮵ',   'tso': 'Ꮶ',     'tsu': 'Ꮷ',    'tsv': 'Ꮸ',
             // W- sounds
-            'wa': 'Ꮹ', 'we': 'Ꮺ', 'wi': 'Ꮻ', 'wo': 'Ꮼ', 'wu': 'Ꮽ', 'wv': 'Ꮾ',
+            'wa': 'Ꮹ',    'we': 'Ꮺ',   'wi': 'Ꮻ',    'wo': 'Ꮼ',      'wu': 'Ꮽ',     'wv': 'Ꮾ',
             // Y- sounds
-            'ya': 'Ꮿ', 'ye': 'Ᏸ', 'yi': 'Ᏹ', 'yo': 'Ᏺ', 'yu': 'Ᏻ', 'yv': 'Ᏼ',
+                            
+            'ya': 'Ꮿ',    'ye': 'Ᏸ',    'yi': 'Ᏹ',    'yo': 'Ᏺ',      'yu': 'Ᏻ',     'yv': 'Ᏼ',
             // Dash is used to separate syllabary characters
             '-': ''
         };
