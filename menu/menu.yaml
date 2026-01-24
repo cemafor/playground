@@ -1,0 +1,44 @@
+menu:
+  - category: "Pancakes and Waffles"
+    addOns:
+      - name: Mixed Berry Compote
+      - name: Chocolate Chips
+      - name: Sprinkles
+      - name: Peanut Butter
+    items:
+      - name: "Pancake the size of your face"
+        description: "Kodiak protein pancake with butter and syrup on the side"
+        tags: ["Vegetarian", "Popular"]
+      
+      - name: "Strawberry Pancakes"
+        description: "Three pancakes with strawberry and white chocolate chunks"
+        tags: ["Vegetarian", "Kids Love It"]
+      
+      - name: "Belgian Waffle"
+        description: "Crispy golden waffle with butter and syrup on the side"
+        tags: ["Vegetarian"]
+
+  - category: "Other Favorites"
+    items:
+      - name: "Omelette"
+        description: "An omelette with onion, peppers, cheese with a choice of spice blend.  Has a chance of becoming scrambled eggs..."
+        tags: ["Vegetarian"]
+      
+      - name: "Oatmeal"
+        description: "Old fashioned oats with a blend of Penzey's Pie Spice and Cinnamon, maple syrup and the option of adding diced apple"
+        tags: ["Vegan"]
+
+  - category: "Sides"
+    items:
+      - name: "Toast"
+        description: "Wheat bread toast... idk what else to say"
+        tags: ["Chef's Special"]
+      
+      - name: "Plain scrambled eggs"
+        description: "Just eggs, milk and cheese... with salt and pepper of course."
+        tags: ["Vegetarian"]
+      
+      - name: "Breakfast Burrito"
+        price: "For a Limited Time!"
+        description: "Scrambled eggs, sasauge, peppers, onion, cheese, and hash browns wrapped in a flour tortilla. Hot sauces available upon request"
+        tags: ["Hearty", "Popular"]
