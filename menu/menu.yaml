@@ -2,7 +2,7 @@ menu:
   - category: "Drinks"
     items:
       - name: "Coffee"
-        description: "Bottomless drip coffee.  Creamer, Spicy Mexican Mocha, hazelnut syrup available."
+        description: "Bottomless drip coffee.\n\nCreamer, Spicy Mexican Mocha, hazelnut syrup available."
         tags: ["Manditory"]
   - category: "Pancakes and Waffles"
     addOns:
