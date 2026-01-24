@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning Glory Café</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f9f7f4;
+        }
+
+        header {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .menu-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        }
+
+        .menu-section h2 {
+            color: #ff6b35;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #f7931e;
+            padding-bottom: 0.5rem;
+        }
+
+        .menu-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .menu-item {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1.5rem;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .item-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .item-price {
+            font-size: 1.2rem;
+            color: #ff6b35;
+            font-weight: bold;
+        }
+
+        .item-description {
+            color: #666;
+            font-size: 0.95rem;
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .tag {
+            background: #fff3e0;
+            color: #e65100;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+        }
+
+        footer p {
+            margin: 0.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .menu-section {
+                padding: 1.5rem;
+            }
+
+            .menu-section h2 {
+                font-size: 1.5rem;
+            }
+
+            .item-name {
+                font-size: 1.1rem;
+            }
+
+            .item-price {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>☀️ Morning Glory Café</h1>
+        <p>Start your day right with our delicious breakfast menu</p>
+    </header>
+
+    <div class="container">
+        <div id="menu-container">
+            <div class="loading">Loading menu...</div>
+        </div>
+    </div>
+
+    <footer>
+        <p><strong>Morning Glory Café</strong></p>
+        <p>Open Daily: 6:00 AM - 2:00 PM</p>
+        <p>📞 (555) 123-4567 | 📍 123 Sunrise Boulevard</p>
+    </footer>
+
+    <script>
+        // Sample YAML menu data (in production, this would be loaded from a separate .yaml file)
+        const yamlData = `
+menu:
+  - category: "Classic Breakfast"
+    items:
+      - name: "Farmhouse Breakfast"
+        price: "$12.99"
+        description: "Two eggs any style, choice of bacon or sausage, hash browns, and toast"
+        tags: ["Popular", "Protein-Rich"]
+      
+      - name: "Pancake Stack"
+        price: "$9.99"
+        description: "Three fluffy buttermilk pancakes served with maple syrup and butter"
+        tags: ["Vegetarian", "Kids Love It"]
+      
+      - name: "Belgian Waffle"
+        price: "$10.99"
+        description: "Crispy golden waffle topped with fresh berries and whipped cream"
+        tags: ["Vegetarian"]
+
+  - category: "Healthy Options"
+    items:
+      - name: "Avocado Toast"
+        price: "$11.99"
+        description: "Smashed avocado on multigrain toast with cherry tomatoes, feta, and poached egg"
+        tags: ["Vegetarian", "Instagram-Worthy"]
+      
+      - name: "Greek Yogurt Parfait"
+        price: "$8.99"
+        description: "Layers of Greek yogurt, granola, honey, and seasonal fresh fruit"
+        tags: ["Vegetarian", "Gluten-Free Option"]
+      
+      - name: "Sunrise Smoothie Bowl"
+        price: "$10.99"
+        description: "Acai berry smoothie topped with granola, banana, strawberries, and coconut"
+        tags: ["Vegan", "Superfood"]
+
+  - category: "Signature Dishes"
+    items:
+      - name: "Huevos Rancheros"
+        price: "$13.99"
+        description: "Crispy tortillas topped with black beans, fried eggs, salsa, and queso fresco"
+        tags: ["Spicy", "Chef's Special"]
+      
+      - name: "Crab Cake Benedict"
+        price: "$16.99"
+        description: "Poached eggs and crab cakes on English muffins with hollandaise sauce"
+        tags: ["Premium", "Chef's Special"]
+      
+      - name: "Breakfast Burrito"
+        price: "$12.99"
+        description: "Scrambled eggs, chorizo, peppers, cheese, and hash browns wrapped in a flour tortilla"
+        tags: ["Hearty", "Popular"]
+`;
+
+        async function loadMenu() {
+            const container = document.getElementById('menu-container');
+            
+            try {
+                // Parse YAML data
+                const menuData = jsyaml.load(yamlData);
+                
+                // Clear loading message
+                container.innerHTML = '';
+                
+                // Create menu sections
+                menuData.menu.forEach(section => {
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.className = 'menu-section';
+                    
+                    const sectionTitle = document.createElement('h2');
+                    sectionTitle.textContent = section.category;
+                    sectionDiv.appendChild(sectionTitle);
+                    
+                    const menuGrid = document.createElement('div');
+                    menuGrid.className = 'menu-grid';
+                    
+                    section.items.forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'menu-item';
+                        
+                        const itemHeader = document.createElement('div');
+                        itemHeader.className = 'item-header';
+                        
+                        const itemName = document.createElement('div');
+                        itemName.className = 'item-name';
+                        itemName.textContent = item.name;
+                        
+                        const itemPrice = document.createElement('div');
+                        itemPrice.className = 'item-price';
+                        itemPrice.textContent = item.price;
+                        
+                        itemHeader.appendChild(itemName);
+                        itemHeader.appendChild(itemPrice);
+                        itemDiv.appendChild(itemHeader);
+                        
+                        const itemDesc = document.createElement('div');
+                        itemDesc.className = 'item-description';
+                        itemDesc.textContent = item.description;
+                        itemDiv.appendChild(itemDesc);
+                        
+                        if (item.tags && item.tags.length > 0) {
+                            const tagsDiv = document.createElement('div');
+                            tagsDiv.className = 'item-tags';
+                            
+                            item.tags.forEach(tag => {
+                                const tagSpan = document.createElement('span');
+                                tagSpan.className = 'tag';
+                                tagSpan.textContent = tag;
+                                tagsDiv.appendChild(tagSpan);
+                            });
+                            
+                            itemDiv.appendChild(tagsDiv);
+                        }
+                        
+                        menuGrid.appendChild(itemDiv);
+                    });
+                    
+                    sectionDiv.appendChild(menuGrid);
+                    container.appendChild(sectionDiv);
+                });
+                
+            } catch (error) {
+                container.innerHTML = `<div class="error">Error loading menu: ${error.message}</div>`;
+                console.error('Error loading menu:', error);
+            }
+        }
+
+        // Load menu when page loads
+        loadMenu();
+    </script>
+</body>
+</html>
