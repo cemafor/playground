@@ -171,7 +171,7 @@
 </head>
 <body>
     <header>
-        <h1>☀️ Morning Glory Café</h1>
+        <h1>☀️ Second Breakfast Café</h1>
         <p>Start your day right with our delicious breakfast menu</p>
     </header>
 
@@ -183,72 +183,19 @@
 
     <footer>
         <p><strong>Morning Glory Café</strong></p>
-        <p>Open Daily: 6:00 AM - 2:00 PM</p>
-        <p>📞 (555) 123-4567 | 📍 123 Sunrise Boulevard</p>
+        <p>Open Daily: Breakfast through Elevenses</p>
+        <p>📞 (555) 867-5309 | 📍 Bag End, Bagshot Row, Hobbiton</p>
     </footer>
 
     <script>
-        // Sample YAML menu data (in production, this would be loaded from a separate .yaml file)
-        const yamlData = `
-menu:
-  - category: "Classic Breakfast"
-    items:
-      - name: "Farmhouse Breakfast"
-        price: "$12.99"
-        description: "Two eggs any style, choice of bacon or sausage, hash browns, and toast"
-        tags: ["Popular", "Protein-Rich"]
-      
-      - name: "Pancake Stack"
-        price: "$9.99"
-        description: "Three fluffy buttermilk pancakes served with maple syrup and butter"
-        tags: ["Vegetarian", "Kids Love It"]
-      
-      - name: "Belgian Waffle"
-        price: "$10.99"
-        description: "Crispy golden waffle topped with fresh berries and whipped cream"
-        tags: ["Vegetarian"]
-
-  - category: "Healthy Options"
-    items:
-      - name: "Avocado Toast"
-        price: "$11.99"
-        description: "Smashed avocado on multigrain toast with cherry tomatoes, feta, and poached egg"
-        tags: ["Vegetarian", "Instagram-Worthy"]
-      
-      - name: "Greek Yogurt Parfait"
-        price: "$8.99"
-        description: "Layers of Greek yogurt, granola, honey, and seasonal fresh fruit"
-        tags: ["Vegetarian", "Gluten-Free Option"]
-      
-      - name: "Sunrise Smoothie Bowl"
-        price: "$10.99"
-        description: "Acai berry smoothie topped with granola, banana, strawberries, and coconut"
-        tags: ["Vegan", "Superfood"]
-
-  - category: "Signature Dishes"
-    items:
-      - name: "Huevos Rancheros"
-        price: "$13.99"
-        description: "Crispy tortillas topped with black beans, fried eggs, salsa, and queso fresco"
-        tags: ["Spicy", "Chef's Special"]
-      
-      - name: "Crab Cake Benedict"
-        price: "$16.99"
-        description: "Poached eggs and crab cakes on English muffins with hollandaise sauce"
-        tags: ["Premium", "Chef's Special"]
-      
-      - name: "Breakfast Burrito"
-        price: "$12.99"
-        description: "Scrambled eggs, chorizo, peppers, cheese, and hash browns wrapped in a flour tortilla"
-        tags: ["Hearty", "Popular"]
-`;
-
         async function loadMenu() {
             const container = document.getElementById('menu-container');
             
             try {
                 // Parse YAML data
-                const menuData = jsyaml.load(yamlData);
+                const response = await fetch('menu.yaml');
+                const yamlText = await response.text();
+                const menuData = jsyaml.load(yamlText);
                 
                 // Clear loading message
                 container.innerHTML = '';
