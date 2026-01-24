@@ -1,4 +1,9 @@
 menu:
+  - category: "Drinks"
+    items:
+      - name: "Coffee"
+        description: "Bottomless drip coffee.  Creamer, Spicy Mexican Mocha, hazelnut syrup available."
+        tags: ["Manditory"]
   - category: "Pancakes and Waffles"
     addOns:
       - name: Mixed Berry Compote
@@ -32,7 +37,6 @@ menu:
     items:
       - name: "Toast"
         description: "Wheat bread toast... idk what else to say"
-        tags: ["Chef's Special"]
       
       - name: "Plain scrambled eggs"
         description: "Just eggs, milk and cheese... with salt and pepper of course."
