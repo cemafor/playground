@@ -4,6 +4,8 @@ menu:
       - name: "Coffee"
         description: "Bottomless drip coffee.\n\nCreamer, Spicy Mexican Mocha, hazelnut syrup available."
         tags: ["Manditory"]
+      - name: "Milk"
+        description: "Glass of milk"
   - category: "Pancakes and Waffles"
     addOns:
       - name: Mixed Berry Compote
@@ -16,15 +18,20 @@ menu:
         tags: ["Vegetarian", "Popular"]
       
       - name: "Strawberry Pancakes"
-        description: "Three pancakes with strawberry and white chocolate chunks"
+        description: "Three Bob's Red Mill White Chocolate and strawberry pancakes"
         tags: ["Vegetarian", "Kids Love It"]
       
       - name: "Belgian Waffle"
-        description: "Crispy golden waffle with butter and syrup on the side"
+        description: "Crispy golden waffle with butter and syrup"
         tags: ["Vegetarian"]
 
   - category: "Other Favorites"
     items:
+      - name: "Breakfast Burrito"
+        price: "For a Limited Time!"
+        description: "Scrambled eggs, sasauge, peppers, onion, cheese, and hash browns wrapped in a flour tortilla. Hot sauces available upon request"
+        tags: ["Hearty", "Popular"]
+
       - name: "Omelette"
         description: "An omelette with onion, peppers, cheese with a choice of spice blend.  Has a chance of becoming scrambled eggs..."
         tags: ["Vegetarian"]
@@ -33,16 +40,20 @@ menu:
         description: "Old fashioned oats with a blend of Penzey's Pie Spice and Cinnamon, maple syrup and the option of adding diced apple"
         tags: ["Vegan"]
 
+      - name: "Cereal"
+        description: "Cheerios!"
+        tags: ["Vegetarian"]
+
   - category: "Sides"
     items:
       - name: "Toast"
-        description: "Wheat bread toast... idk what else to say"
+        description: "Wheat bread toast with butter and optional cinnamon sugar"
       
       - name: "Plain scrambled eggs"
         description: "Just eggs, milk and cheese... with salt and pepper of course."
         tags: ["Vegetarian"]
+
+      - name: "Hash Browns"
+        description: "Golden hash browns with a choice of spice blend"
+        tags: ["Vegetarian"]
       
-      - name: "Breakfast Burrito"
-        price: "For a Limited Time!"
-        description: "Scrambled eggs, sasauge, peppers, onion, cheese, and hash browns wrapped in a flour tortilla. Hot sauces available upon request"
-        tags: ["Hearty", "Popular"]
