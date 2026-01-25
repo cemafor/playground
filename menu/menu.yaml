@@ -2,10 +2,14 @@ menu:
   - category: "Drinks"
     items:
       - name: "Coffee"
-        description: "Bottomless drip coffee.\n\nCreamer, Spicy Mexican Mocha, hazelnut syrup available."
+        description: "Bottomless drip coffee.\n\r\nCreamer, Spicy Mexican Mocha, hazelnut syrup available."
         tags: ["Manditory"]
+
+      - name: "Dala Horse"
+        description: "Lingonberry syrup, ginger ale and a splash of lime juice"
+
       - name: "Milk"
-        description: "Glass of milk"
+        description: "Glass of milk... or Chocolate!"
   - category: "Pancakes and Waffles"
     addOns:
       - name: Mixed Berry Compote
