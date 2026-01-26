@@ -31,9 +31,14 @@ menu:
 
   - category: "Other Favorites"
     items:
+      - name: "Pumpkin Bread"
+        price: "This week only!"
+        description: "A slice or two of homemade pumpkin bread with craisins and mixed nuts."
+        tags: ["Popular", "Vegetarian"]
+        
       - name: "Breakfast Burrito"
         price: "For a Limited Time!"
-        description: "Scrambled eggs, sasauge, peppers, onion, cheese, and hash browns wrapped in a flour tortilla. Hot sauces available upon request"
+        description: "Scrambled eggs, baccon, peppers, onion, cheese, and hash browns wrapped in a flour tortilla. Hot sauces available upon request"
         tags: ["Hearty", "Popular"]
 
       - name: "Omelette"
