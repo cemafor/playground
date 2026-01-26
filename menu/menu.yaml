@@ -12,10 +12,8 @@ menu:
         description: "Glass of milk... or Chocolate!"
   - category: "Pancakes and Waffles"
     addOns:
-      - name: Mixed Berry Compote
-      - name: Chocolate Chips
-      - name: Sprinkles
-      - name: Peanut Butter
+      description: "Mix-ins and extras available for any pancake or waffle"
+      items: ["Mixed Berry Compote", "Chocolate Chips", "Sprinkles", "Peanut Butter"]
     items:
       - name: "Pancake the size of your face"
         description: "Kodiak protein pancake with butter and syrup on the side"

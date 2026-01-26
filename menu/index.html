@@ -119,6 +119,15 @@
             font-weight: 500;
         }
 
+        .addOn {
+            background: #fffcbd;
+            color: #e65100;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
         .loading {
             text-align: center;
             padding: 3rem;
@@ -188,6 +197,25 @@
     </footer>
 
     <script>
+const yamlData = `
+menu:
+  - category: "Classic Breakfast"
+    addOns:
+      description: "Mix-ins and extras available for any pancake or waffle"
+      items: ["Mixed Berry Compote", "Chocolate Chips", "Sprinkles", "Peanut Butter"]
+    items:
+      - name: "Farmhouse Breakfast"
+        description: "Two eggs any style, choice of bacon or sausage, hash browns, and toast"
+        tags: ["Popular", "Protein-Rich"]
+      - name: "Pancake Stack"
+        price: ""
+        description: "Three fluffy buttermilk pancakes served with maple syrup and butter"
+      
+      - name: "Belgian Waffle"
+        price: "$10.99"
+        description: "Crispy golden waffle topped with fresh berries and whipped cream"
+        tags: ["Vegetarian"]
+`;
         async function loadMenu() {
             const container = document.getElementById('menu-container');
             
@@ -211,6 +239,26 @@
                     
                     const menuGrid = document.createElement('div');
                     menuGrid.className = 'menu-grid';
+                    
+                    if (section.addOns) {
+                        const addOnDesc = document.createElement('div');
+                        addOnDesc.className = 'item-description';
+                        addOnDesc.textContent = section.addOns.description;
+                        menuGrid.appendChild(addOnDesc);
+                        
+                        if (section.addOns.items && section.addOns.items.length > 0) {
+                            const addOnsDiv = document.createElement('div');
+                            addOnsDiv.className = 'item-tags';
+                            
+                            section.addOns.items.forEach(addOn => {
+                                const addOnSpan = document.createElement('span');
+                                addOnSpan.className = 'addOn';
+                                addOnSpan.textContent = addOn;
+                                addOnsDiv.appendChild(addOnSpan);
+                            });
+                            addOnDesc.appendChild(addOnsDiv);
+                        }
+                    }
                     
                     section.items.forEach(item => {
                         const itemDiv = document.createElement('div');
