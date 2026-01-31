@@ -9,7 +9,7 @@ menu:
         description: "Lingonberry syrup, ginger ale and a splash of lime juice"
 
       - name: "Milk"
-        description: "Glass of milk... or Chocolate!"
+        description: "Glass of milk... or make it Chocolate!"
   - category: "Pancakes and Waffles"
     addOns:
       description: "Mix-ins and extras available for any pancake or waffle"
@@ -30,7 +30,7 @@ menu:
   - category: "Other Favorites"
     items:
       - name: "Pumpkin Bread"
-        price: "This week only!"
+        price: "Sold Out! (Unless you really want some)"
         description: "A slice or two of homemade pumpkin bread with craisins and mixed nuts."
         tags: ["Popular", "Vegetarian"]
         
