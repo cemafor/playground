@@ -20,6 +20,7 @@ menu:
         tags: ["Vegetarian", "Popular"]
       
       - name: "Strawberry Pancakes"
+        price: "Sold Out!"
         description: "Three Bob's Red Mill White Chocolate and strawberry pancakes"
         tags: ["Vegetarian", "Kids Love It"]
       
