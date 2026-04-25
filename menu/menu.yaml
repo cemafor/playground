@@ -1,3 +1,8 @@
+restaurant:
+  name: "☀️ Second Breakfast Café"
+  slogan: "Start your day right with our delicious breakfast menu"
+  hours: "Open Daily: Breakfast through Elevenses"
+  location: "📞 (555) 867-5309 | 📍 Bag End, Bagshot Row, Hobbiton"
 menu:
   - category: "Drinks"
     items:
@@ -36,8 +41,8 @@ menu:
         tags: ["Popular", "Vegetarian"]
         
       - name: "Breakfast Burrito"
-        price: "Sold Out!"
-        description: "Scrambled eggs, baccon, peppers, onion, cheese, and hash browns wrapped in a flour tortilla. Hot sauces available upon request"
+        price: "Comming Soon!"
+        description: "Scrambled eggs, sausage, peppers, onion, cheese, and hash browns wrapped in a flour tortilla. Hot sauces available upon request"
         tags: ["Hearty", "Popular"]
 
       - name: "Omelette"
@@ -49,7 +54,11 @@ menu:
         tags: ["Vegan"]
 
       - name: "Cereal"
-        description: "Cheerios!"
+        description: "Cheerios or Honey Bunches of Oats!"
+        tags: ["Vegetarian"]
+
+      - name: "Yogurt Parfait"
+        description: "Greek yogurt with your choice of... whatever you want in it!"
         tags: ["Vegetarian"]
 
   - category: "Sides"

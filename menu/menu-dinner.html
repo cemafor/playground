@@ -19,7 +19,7 @@
         }
 
         header {
-            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            background: linear-gradient(135deg, #0b7e0b 0%, #49a751 100%);
             color: white;
             padding: 2rem 1rem;
             text-align: center;
@@ -52,10 +52,10 @@
         }
 
         .menu-section h2 {
-            color: #ff6b35;
+            color: #0b7e0b;
             font-size: 2rem;
             margin-bottom: 1.5rem;
-            border-bottom: 3px solid #f7931e;
+            border-bottom: 3px solid #49a751;
             padding-bottom: 0.5rem;
         }
 
@@ -91,7 +91,7 @@
 
         .item-price {
             font-size: 1.2rem;
-            color: #ff6b35;
+            color: #0b7e0b;
             font-weight: bold;
         }
 
@@ -110,8 +110,8 @@
         }
 
         .tag {
-            background: #fff3e0;
-            color: #e65100;
+            background: #ccffbd;
+            color: #0b7e0b;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
@@ -119,8 +119,8 @@
         }
 
         .addOn {
-            background: #fffcbd;
-            color: #e65100;
+            background: #ccffbd;
+            color: #0b7e0b;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
@@ -206,7 +206,7 @@
             
             try {
                 // Parse YAML data
-                const response = await fetch('menu.yaml');
+                const response = await fetch('menu-dinner.yaml');
                 const yamlText = await response.text();
                 const menuData = jsyaml.load(yamlText);
                 

@@ -1,0 +1,47 @@
+restaurant:
+  name: "🥔 Sam's Diner!"
+  slogan: "That'll take the wrinkles out of your belly"
+  hours: "Open Daily: Luncheon through Supper"
+  location: "📞 (555) 867-5309 | 📍 Bag End, Bagshot Row, Hobbiton"
+menu:
+  - category: "Drinks"
+    items:
+      - name: "Dala Horse"
+        description: "Lingonberry syrup, ginger ale and a splash of lime juice"
+
+      - name: "Dr Pepper Zero"
+      - name: "Bubbly Sparkling water"
+      - name: "Decaf Coffee"
+        description: "Bottomless drip coffee.\n\r\nCreamer, Spicy Mexican Mocha, hazelnut syrup available."
+
+  - category: "Po-ta-toes!"
+    addOns:
+      description: "Boil 'em, Mash 'em, Stick 'em in a Stew"
+    items:
+      - name: "Baked Potato"
+        description: "Microwaved Potato with Greek yogurt, butter, cheese, salt and pepper"
+        tags: ["Vegetarian", "Popular"]
+      
+      - name: "Mashed Potatoes"
+        description: "Mashed potatoes and gravy"
+        tags: ["Vegetarian", "Kids Love It"]
+      
+      - name: "Twice Baked Potatoe"
+        description: "A potato, that was backed, then baked again"
+        tags: ["Vegetarian"]
+
+  - category: "Pasta"
+    items:
+      - name: "Spaghetti and Meat Balls"
+        description: "Spighetti with meat (or plant) balls and red sauce"
+        tags: ["Popular", "Vegetarianable"]
+
+  - category: "Sides"
+    items:
+      - name: "Toast"
+        description: "Wheat bread toast with butter and optional cinnamon sugar"
+
+      - name: "Hash Browns"
+        description: "Golden hash browns with a choice of spice blend"
+        tags: ["Vegetarian"]
+      
