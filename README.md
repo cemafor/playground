@@ -11,7 +11,6 @@ A directory of all pages available in this repository.
 
 ## Pages
 
-{% raw %}
 <ul>
   {% for page in site.pages %}
     {% if page.name contains '.html' %}
@@ -21,6 +20,5 @@ A directory of all pages available in this repository.
     {% endif %}
   {% endfor %}
 </ul>
-{% endraw %}
 
 *Last updated: {{ site.time | date: "%B %d, %Y" }}*
