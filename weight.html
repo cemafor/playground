@@ -144,11 +144,19 @@
     border-radius: var(--radius);
     padding: 24px;
     margin-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .input-row1, .input-row2 {
     display: grid;
-    grid-template-columns: 1fr 1fr auto auto;
     gap: 12px;
     align-items: end;
   }
+
+  .input-row1 { grid-template-columns: 1fr auto; }
+  .input-row2 { grid-template-columns: 1fr auto; }
 
   .field {
     display: flex;
@@ -323,6 +331,12 @@
     overflow: hidden;
   }
 
+  .log-header-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
   .log-header {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr auto;
@@ -443,8 +457,7 @@
   /* Responsive */
   @media (max-width: 640px) {
     .stats-row { grid-template-columns: 1fr 1fr; }
-    .input-section { grid-template-columns: 1fr 1fr; }
-    .input-section .btn { grid-column: span 2; }
+    .input-row2 { grid-template-columns: 1fr auto; }
     .log-header, .log-row { grid-template-columns: 1fr 1fr auto; }
     .log-header .h-change, .log-change { display: none; }
   }
@@ -461,22 +474,26 @@
 
   <!-- Input -->
   <div class="input-section">
-    <div class="field">
-      <label>Date</label>
-      <input type="date" id="input-date">
+    <div class="input-row1">
+      <div class="field">
+        <label>Weight</label>
+        <input type="number" id="input-weight" placeholder="0.0" step="0.1" min="0" max="999">
+      </div>
+      <button class="btn" onclick="addEntry()">+ Log</button>
     </div>
-    <div class="field">
-      <label>Weight</label>
-      <input type="number" id="input-weight" placeholder="0.0" step="0.1" min="0" max="999">
-    </div>
-    <div class="field">
-      <label>Unit</label>
-      <div class="unit-toggle">
-        <button class="unit-btn active" id="btn-kg" onclick="setUnit('kg')">kg</button>
-        <button class="unit-btn" id="btn-lb" onclick="setUnit('lb')">lb</button>
+    <div class="input-row2">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="input-date">
+      </div>
+      <div class="field">
+        <label>Unit</label>
+        <div class="unit-toggle">
+          <button class="unit-btn" id="btn-kg" onclick="setUnit('kg')">kg</button>
+          <button class="unit-btn active" id="btn-lb" onclick="setUnit('lb')">lb</button>
+        </div>
       </div>
     </div>
-    <button class="btn" onclick="addEntry()">+ Log</button>
   </div>
 
   <!-- Stats -->
@@ -522,7 +539,10 @@
       <span>Date</span>
       <span>Weight</span>
       <span class="h-change">Change</span>
-      <span></span>
+      <div class="log-header-actions">
+        <button class="range-btn" onclick="importData()" title="Import from clipboard">↓ Import</button>
+        <button class="range-btn" onclick="exportData()" title="Export to clipboard">↑ Export</button>
+      </div>
     </div>
     <div class="log-body" id="log-body">
       <div class="log-empty">No entries yet.</div>
@@ -543,7 +563,7 @@
   function init() {
     const saved = localStorage.getItem(STORAGE_KEY);
     entries = saved ? JSON.parse(saved) : [];
-    unit = localStorage.getItem(UNIT_KEY) || 'kg';
+    unit = localStorage.getItem(UNIT_KEY) || 'lb';
 
     // Set today's date
     document.getElementById('input-date').value = todayStr();
@@ -836,6 +856,49 @@
     el.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  // ── Export / Import ──────────────────────────────────────────────────
+  function exportData() {
+    if (entries.length === 0) { toast('No data to export.'); return; }
+    const lines = ['date,kg,lb'];
+    entries.forEach(e => {
+      lines.push(`${e.date},${e.kg.toFixed(4)},${(e.kg * 2.20462).toFixed(4)}`);
+    });
+    const csv = lines.join('\n');
+    navigator.clipboard.writeText(csv)
+      .then(() => toast(`Exported ${entries.length} entries to clipboard.`))
+      .catch(() => toast('Clipboard write failed.'));
+  }
+
+  function importData() {
+    navigator.clipboard.readText()
+      .then(text => {
+        const lines = text.trim().split('\n').filter(l => l.trim());
+        if (!lines.length) { toast('Clipboard is empty.'); return; }
+
+        // Strip header if present
+        const dataLines = lines[0].toLowerCase().startsWith('date') ? lines.slice(1) : lines;
+        if (!dataLines.length) { toast('No data rows found.'); return; }
+
+        let imported = 0, skipped = 0;
+        dataLines.forEach(line => {
+          const parts = line.split(',');
+          if (parts.length < 2) { skipped++; return; }
+          const date = parts[0].trim();
+          const kg = parseFloat(parts[1].trim());
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(kg) || kg <= 0) { skipped++; return; }
+          const idx = entries.findIndex(e => e.date === date);
+          if (idx > -1) { entries[idx].kg = kg; } else { entries.push({ date, kg }); }
+          imported++;
+        });
+
+        entries.sort((a, b) => a.date.localeCompare(b.date));
+        save();
+        render();
+        toast(`Imported ${imported} entries${skipped ? `, skipped ${skipped}` : ''}.`);
+      })
+      .catch(() => toast('Clipboard read failed — check browser permissions.'));
   }
 
   // ── Key listener ──────────────────────────────────────────────────────
