@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weight Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --surface2: #1f1f1f;
+    --border: #2a2a2a;
+    --accent: #c8f560;
+    --accent-dim: rgba(200, 245, 96, 0.12);
+    --accent-glow: rgba(200, 245, 96, 0.06);
+    --text: #f0ede6;
+    --text-muted: #6b6b6b;
+    --text-sub: #9a9a9a;
+    --danger: #ff5f57;
+    --danger-dim: rgba(255, 95, 87, 0.12);
+    --up: #ff7a5c;
+    --down: #c8f560;
+    --radius: 4px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,245,96,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,245,96,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 24px 100px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    margin-bottom: 56px;
+  }
+
+  .header-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 56px);
+    font-weight: 400;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .header-sub {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+
+  .stat {
+    background: var(--surface);
+    padding: 20px 18px;
+    transition: background 0.2s;
+  }
+
+  .stat:hover { background: var(--surface2); }
+
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .stat-value.accent { color: var(--accent); }
+  .stat-value.up { color: var(--up); }
+  .stat-value.down { color: var(--down); }
+
+  .stat-unit {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-left: 3px;
+  }
+
+  /* Input section */
+  .input-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr auto auto;
+    gap: 12px;
+    align-items: end;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  input[type="number"], input[type="date"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    padding: 10px 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input[type="number"]:focus, input[type="date"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.4);
+    cursor: pointer;
+  }
+
+  /* Unit toggle */
+  .unit-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    height: 40px;
+  }
+
+  .unit-btn {
+    flex: 1;
+    background: var(--bg);
+    border: none;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    padding: 0 14px;
+    transition: all 0.15s;
+  }
+
+  .unit-btn.active {
+    background: var(--accent);
+    color: #0e0e0e;
+    font-weight: 500;
+  }
+
+  /* Buttons */
+  .btn {
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: #0e0e0e;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    padding: 10px 20px;
+    height: 40px;
+    white-space: nowrap;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .btn:hover { opacity: 0.88; }
+  .btn:active { transform: scale(0.98); }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    opacity: 1;
+  }
+
+  /* Chart */
+  .chart-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .range-btns {
+    display: flex;
+    gap: 2px;
+  }
+
+  .range-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    transition: all 0.15s;
+  }
+
+  .range-btn.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .chart-canvas-wrap {
+    position: relative;
+    height: 180px;
+  }
+
+  canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  .chart-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 180px;
+    color: var(--text-muted);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Log table */
+  .log-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .log-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    padding: 12px 20px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .log-header span {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .log-body {
+    max-height: 360px;
+    overflow-y: auto;
+  }
+
+  .log-body::-webkit-scrollbar { width: 4px; }
+  .log-body::-webkit-scrollbar-track { background: transparent; }
+  .log-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .log-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    padding: 13px 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    transition: background 0.15s;
+    animation: slideIn 0.25s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .log-row:last-child { border-bottom: none; }
+  .log-row:hover { background: var(--surface2); }
+
+  .log-date {
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+
+  .log-weight {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .log-change {
+    font-size: 12px;
+  }
+
+  .log-change.up { color: var(--up); }
+  .log-change.down { color: var(--down); }
+  .log-change.neutral { color: var(--text-muted); }
+
+  .del-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    height: 24px;
+    width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .del-btn:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: var(--danger-dim);
+  }
+
+  .log-empty {
+    padding: 48px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--accent);
+    color: #0e0e0e;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 12px 18px;
+    border-radius: var(--radius);
+    z-index: 99;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .input-section { grid-template-columns: 1fr 1fr; }
+    .input-section .btn { grid-column: span 2; }
+    .log-header, .log-row { grid-template-columns: 1fr 1fr auto; }
+    .log-header .h-change, .log-change { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-label">Personal Health Log</div>
+    <h1>Body <em>Weight</em><br>Tracker</h1>
+    <div class="header-sub">Stored locally in your browser — no accounts, no sync, no servers.</div>
+  </header>
+
+  <!-- Input -->
+  <div class="input-section">
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="input-date">
+    </div>
+    <div class="field">
+      <label>Weight</label>
+      <input type="number" id="input-weight" placeholder="0.0" step="0.1" min="0" max="999">
+    </div>
+    <div class="field">
+      <label>Unit</label>
+      <div class="unit-toggle">
+        <button class="unit-btn active" id="btn-kg" onclick="setUnit('kg')">kg</button>
+        <button class="unit-btn" id="btn-lb" onclick="setUnit('lb')">lb</button>
+      </div>
+    </div>
+    <button class="btn" onclick="addEntry()">+ Log</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-label">Current</div>
+      <div class="stat-value accent" id="stat-current">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Starting</div>
+      <div class="stat-value" id="stat-start">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Total Change</div>
+      <div class="stat-value" id="stat-change">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Entries</div>
+      <div class="stat-value" id="stat-count">0</div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-section">
+    <div class="section-header">
+      <div class="section-title">Progress Chart</div>
+      <div class="range-btns">
+        <button class="range-btn active" onclick="setRange(30, this)">30d</button>
+        <button class="range-btn" onclick="setRange(90, this)">90d</button>
+        <button class="range-btn" onclick="setRange(365, this)">1y</button>
+        <button class="range-btn" onclick="setRange(Infinity, this)">All</button>
+      </div>
+    </div>
+    <div class="chart-canvas-wrap">
+      <canvas id="chart"></canvas>
+      <div class="chart-empty" id="chart-empty">No data yet — log your first entry above.</div>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="log-section">
+    <div class="log-header">
+      <span>Date</span>
+      <span>Weight</span>
+      <span class="h-change">Change</span>
+      <span></span>
+    </div>
+    <div class="log-body" id="log-body">
+      <div class="log-empty">No entries yet.</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_KEY = 'wt_entries';
+  const UNIT_KEY = 'wt_unit';
+  let entries = [];
+  let unit = 'kg';
+  let chartRange = 30;
+
+  // ── Init ──────────────────────────────────────────────────────────────
+  function init() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    entries = saved ? JSON.parse(saved) : [];
+    unit = localStorage.getItem(UNIT_KEY) || 'kg';
+
+    // Set today's date
+    document.getElementById('input-date').value = todayStr();
+
+    // Pre-fill weight with most recent entry
+    if (entries.length > 0) {
+      const latest = entries[entries.length - 1].kg;
+      const display = unit === 'lb' ? latest * 2.20462 : latest;
+      document.getElementById('input-weight').value = display.toFixed(1);
+    }
+
+    // Reflect unit
+    document.getElementById('btn-kg').classList.toggle('active', unit === 'kg');
+    document.getElementById('btn-lb').classList.toggle('active', unit === 'lb');
+
+    render();
+  }
+
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    localStorage.setItem(UNIT_KEY, unit);
+  }
+
+  // ── Unit ──────────────────────────────────────────────────────────────
+  function setUnit(u) {
+    unit = u;
+    document.getElementById('btn-kg').classList.toggle('active', u === 'kg');
+    document.getElementById('btn-lb').classList.toggle('active', u === 'lb');
+
+    // Re-convert the pre-filled weight input to the new unit
+    const weightInput = document.getElementById('input-weight');
+    if (weightInput.value && entries.length > 0) {
+      const latest = entries[entries.length - 1].kg;
+      const display = u === 'lb' ? latest * 2.20462 : latest;
+      weightInput.value = display.toFixed(1);
+    }
+
+    save();
+    render();
+  }
+
+  function displayWeight(w) {
+    // entries always stored in kg
+    const v = unit === 'lb' ? w * 2.20462 : w;
+    return v.toFixed(1) + ' ' + unit;
+  }
+
+  function inputToKg(v) {
+    return unit === 'lb' ? v / 2.20462 : v;
+  }
+
+  // ── CRUD ──────────────────────────────────────────────────────────────
+  function addEntry() {
+    const dateVal = document.getElementById('input-date').value;
+    const weightVal = parseFloat(document.getElementById('input-weight').value);
+
+    if (!dateVal) { toast('Please pick a date.'); return; }
+    if (isNaN(weightVal) || weightVal <= 0) { toast('Enter a valid weight.'); return; }
+
+    const kg = inputToKg(weightVal);
+
+    // Replace if same date
+    const idx = entries.findIndex(e => e.date === dateVal);
+    if (idx > -1) {
+      entries[idx].kg = kg;
+      toast('Entry updated.');
+    } else {
+      entries.push({ date: dateVal, kg });
+      toast('Entry logged!');
+    }
+
+    entries.sort((a, b) => a.date.localeCompare(b.date));
+    save();
+    render();
+  }
+
+  function deleteEntry(date) {
+    entries = entries.filter(e => e.date !== date);
+    save();
+    render();
+    toast('Entry removed.');
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────
+  function render() {
+    renderStats();
+    renderLog();
+    renderChart();
+  }
+
+  function renderStats() {
+    const n = entries.length;
+    document.getElementById('stat-count').textContent = n;
+
+    if (n === 0) {
+      ['stat-current','stat-start','stat-change'].forEach(id => {
+        document.getElementById(id).textContent = '—';
+        document.getElementById(id).className = 'stat-value';
+      });
+      return;
+    }
+
+    const first = entries[0].kg;
+    const last = entries[n-1].kg;
+    const diff = last - first;
+
+    document.getElementById('stat-current').textContent = displayWeight(last);
+    document.getElementById('stat-start').textContent = displayWeight(first);
+
+    const changeEl = document.getElementById('stat-change');
+    const sign = diff > 0 ? '+' : '';
+    changeEl.textContent = sign + displayWeight(Math.abs(diff)).replace(' '+unit, '') + ' ' + unit;
+    changeEl.className = 'stat-value ' + (diff < 0 ? 'down' : diff > 0 ? 'up' : '');
+  }
+
+  function renderLog() {
+    const body = document.getElementById('log-body');
+    if (entries.length === 0) {
+      body.innerHTML = '<div class="log-empty">No entries yet.</div>';
+      return;
+    }
+
+    // Show newest first
+    const sorted = [...entries].reverse();
+    body.innerHTML = sorted.map((e, i) => {
+      const prev = sorted[i+1];
+      let changeHTML = '<span class="log-change neutral">—</span>';
+      if (prev) {
+        const diff = e.kg - prev.kg;
+        const v = unit === 'lb' ? diff * 2.20462 : diff;
+        const sign = v > 0 ? '+' : '';
+        const cls = v < 0 ? 'down' : v > 0 ? 'up' : 'neutral';
+        changeHTML = `<span class="log-change ${cls}">${sign}${v.toFixed(1)}</span>`;
+      }
+      return `
+        <div class="log-row">
+          <div class="log-date">${formatDate(e.date)}</div>
+          <div class="log-weight">${displayWeight(e.kg)}</div>
+          ${changeHTML}
+          <button class="del-btn" onclick="deleteEntry('${e.date}')" title="Delete">×</button>
+        </div>`;
+    }).join('');
+  }
+
+  function formatDate(str) {
+    const [y, m, d] = str.split('-');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[+m-1]} ${+d}, ${y}`;
+  }
+
+  // ── Chart ─────────────────────────────────────────────────────────────
+  function setRange(days, btn) {
+    chartRange = days;
+    document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderChart();
+  }
+
+  function renderChart() {
+    const canvas = document.getElementById('chart');
+    const empty = document.getElementById('chart-empty');
+
+    // Filter by range
+    let data = entries;
+    if (chartRange !== Infinity) {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - chartRange);
+      const cutStr = cutoff.toISOString().slice(0,10);
+      data = entries.filter(e => e.date >= cutStr);
+    }
+
+    if (data.length < 2) {
+      canvas.style.display = 'none';
+      empty.style.display = 'flex';
+      return;
+    }
+
+    canvas.style.display = 'block';
+    empty.style.display = 'none';
+
+    const dpr = window.devicePixelRatio || 1;
+    const wrap = canvas.parentElement;
+    const W = wrap.clientWidth;
+    const H = wrap.clientHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const values = data.map(e => unit === 'lb' ? e.kg * 2.20462 : e.kg);
+    const minV = Math.min(...values);
+    const maxV = Math.max(...values);
+    const pad = { top: 20, right: 16, bottom: 36, left: 52 };
+    const cW = W - pad.left - pad.right;
+    const cH = H - pad.top - pad.bottom;
+    const range = maxV - minV || 1;
+    const vPad = range * 0.15;
+
+    function xOf(i) { return pad.left + (i / (data.length - 1)) * cW; }
+    function yOf(v) { return pad.top + cH - ((v - minV + vPad) / (range + 2 * vPad)) * cH; }
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = pad.top + (cH / 4) * i;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, y);
+      ctx.lineTo(pad.left + cW, y);
+      ctx.stroke();
+
+      const v = maxV + vPad - ((range + 2 * vPad) / 4) * i;
+      ctx.fillStyle = 'rgba(107,107,107,0.8)';
+      ctx.font = '10px DM Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(v.toFixed(1), pad.left - 8, y + 4);
+    }
+
+    // X labels
+    ctx.fillStyle = 'rgba(107,107,107,0.8)';
+    ctx.font = '9px DM Mono, monospace';
+    ctx.textAlign = 'center';
+    const labelStep = Math.ceil(data.length / 6);
+    data.forEach((e, i) => {
+      if (i % labelStep === 0 || i === data.length - 1) {
+        const [,m,d] = e.date.split('-');
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        ctx.fillText(`${months[+m-1]} ${+d}`, xOf(i), H - pad.bottom + 16);
+      }
+    });
+
+    // Gradient fill
+    const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+    grad.addColorStop(0, 'rgba(200,245,96,0.18)');
+    grad.addColorStop(1, 'rgba(200,245,96,0)');
+
+    ctx.beginPath();
+    ctx.moveTo(xOf(0), yOf(values[0]));
+    for (let i = 1; i < values.length; i++) {
+      const x0 = xOf(i-1), y0 = yOf(values[i-1]);
+      const x1 = xOf(i),   y1 = yOf(values[i]);
+      const cpx = (x0 + x1) / 2;
+      ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
+    }
+    ctx.lineTo(xOf(values.length-1), pad.top + cH);
+    ctx.lineTo(xOf(0), pad.top + cH);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.moveTo(xOf(0), yOf(values[0]));
+    for (let i = 1; i < values.length; i++) {
+      const x0 = xOf(i-1), y0 = yOf(values[i-1]);
+      const x1 = xOf(i),   y1 = yOf(values[i]);
+      const cpx = (x0 + x1) / 2;
+      ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
+    }
+    ctx.strokeStyle = 'rgba(200,245,96,0.85)';
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // Dots
+    values.forEach((v, i) => {
+      ctx.beginPath();
+      ctx.arc(xOf(i), yOf(v), 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#c8f560';
+      ctx.fill();
+      ctx.strokeStyle = '#0e0e0e';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────────────
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  // ── Key listener ──────────────────────────────────────────────────────
+  document.getElementById('input-weight').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addEntry();
+  });
+
+  // Re-draw chart on resize
+  window.addEventListener('resize', renderChart);
+
+  init();
+</script>
+</body>
+</html>
