@@ -26,14 +26,14 @@ menu:
         description: "Mashed potatoes and gravy"
         tags: ["Vegetarian", "Kids Love It"]
       
-      - name: "Twice Baked Potatoe"
-        description: "A potato, that was backed, then baked again"
+      - name: "Twice Baked Potato"
+        description: "A potato, that was baked, then baked again"
         tags: ["Vegetarian"]
 
   - category: "Pasta"
     items:
       - name: "Spaghetti and Meat Balls"
-        description: "Spighetti with meat (or plant) balls and red sauce"
+        description: "Spaghetti with meat (or plant) balls and red sauce"
         tags: ["Popular", "Vegetarianable"]
 
   - category: "Sides"
