@@ -17,7 +17,9 @@ A directory of all pages available in this repository.
       <li>
         <a href="{{ page.url | relative_url }}">{{ page.title | default: page.name }}</a>
         <ul>
-          <li>{{ page.prompts | default: None }}</li>
+        {% for prompt in page.prompts %}
+          <li>{{ prompt }}</li>
+        {% endfor %}
         </ul>
       </li>
     {% endif %}
