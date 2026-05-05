@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calorie Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0e0c;
+      --surface: #1a1916;
+      --surface2: #242220;
+      --surface3: #2e2c29;
+      --border: #3a3835;
+      --text: #f0ede8;
+      --text-muted: #7a776f;
+      --text-dim: #4a4843;
+      --accent: #e8c547;
+      --accent-dim: #c9a93a;
+      --accent-bg: rgba(232, 197, 71, 0.08);
+      --red: #e87447;
+      --green: #7acea0;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* Subtle grain texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 40px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 6vw, 2.8rem);
+      color: var(--text);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    h1 em {
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .date-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 6px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    /* Date Nav */
+    .date-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+    }
+
+    .date-nav button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+      line-height: 1;
+    }
+
+    .date-nav button:hover { color: var(--accent); background: var(--accent-bg); }
+
+    .date-nav-label {
+      flex: 1;
+      text-align: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    .date-nav .today-btn {
+      font-size: 0.75rem;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      padding: 4px 10px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      border-radius: 6px;
+    }
+
+    /* Ring + Summary */
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .ring-wrap {
+      flex-shrink: 0;
+    }
+
+    .ring-svg { display: block; }
+
+    .ring-track { fill: none; stroke: var(--surface3); stroke-width: 8; }
+    .ring-fill  { fill: none; stroke-width: 8; stroke-linecap: round;
+                  transition: stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1), stroke 0.4s; }
+
+    .ring-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .ring-container {
+      position: relative;
+      width: 110px;
+      height: 110px;
+    }
+
+    .ring-cal {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.55rem;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .ring-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+    }
+
+    .summary-stats {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--surface3);
+    }
+
+    .stat-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .stat-name {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .stat-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .stat-val.green { color: var(--green); }
+    .stat-val.red   { color: var(--red); }
+    .stat-val.gold  { color: var(--accent); }
+
+    /* Goal setter */
+    .goal-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .goal-row input[type=number] {
+      width: 90px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.9rem;
+      padding: 4px 8px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .goal-row input[type=number]:focus { border-color: var(--accent); }
+
+    .goal-row label { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* Section heads */
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+
+    /* Quick add */
+    .quick-add-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .input-row input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .input-row input::placeholder { color: var(--text-dim); }
+    .input-row input:focus { border-color: var(--accent); }
+
+    .cal-input { max-width: 100px; font-family: 'DM Mono', monospace !important; }
+
+    .btn {
+      background: var(--accent);
+      color: #0f0e0c;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 10px 18px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn:hover { background: var(--accent-dim); }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover { color: var(--text); background: var(--surface3); }
+
+    .btn-sm { padding: 6px 12px; font-size: 0.78rem; }
+
+    .btn-danger { background: transparent; color: var(--red); border: 1px solid transparent; padding: 4px 8px; font-size: 0.75rem; }
+    .btn-danger:hover { border-color: var(--red); background: rgba(232,116,71,0.08); }
+    .btn-add { background: transparent; color: var(--accent); border: 1px solid transparent; padding: 4px 8px; font-size: 0.75rem; }
+    .btn-add:hover { border-color: var(--accent); background: var(--accent-bg); }
+    .btn-edit { background: transparent; color: var(--text-muted); border: 1px solid transparent; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; }
+    .btn-edit:hover { color: var(--text); border-color: var(--border); background: var(--surface3); }
+
+    /* Saved meals */
+    .meals-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .meal-list {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .empty-meals {
+      text-align: center;
+      padding: 20px 0;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    /* Log */
+    .log-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .log-list {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .log-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      animation: slideIn 0.2s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-time {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      flex-shrink: 0;
+      min-width: 42px;
+    }
+
+    .log-name {
+      flex: 1;
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+
+    .log-cal {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.88rem;
+      color: var(--accent);
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .empty-log {
+      text-align: center;
+      padding: 30px 0;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    .clear-day-btn {
+      margin-top: 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.82rem;
+      padding: 10px 20px;
+      border-radius: 20px;
+      pointer-events: none;
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+      opacity: 0;
+      white-space: nowrap;
+      z-index: 100;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 520px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(12px);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--surface3);
+      flex-shrink: 0;
+    }
+
+    .modal-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: var(--text);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .modal-close:hover { color: var(--text); background: var(--surface3); }
+
+    .modal-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--surface3);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+
+    .field-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    .field-group { margin-bottom: 18px; }
+
+    .field-group input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .field-group input::placeholder { color: var(--text-dim); }
+    .field-group input:focus { border-color: var(--accent); }
+
+    .ingredients-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .ingredient-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      animation: slideIn 0.15s ease;
+    }
+
+    .ingredient-row input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .ingredient-row input::placeholder { color: var(--text-dim); }
+    .ingredient-row input:focus { border-color: var(--accent); }
+    .ingredient-row .ing-name { width: 100%; }
+    .ingredient-row .ing-cal  { width: 90px; font-family: 'DM Mono', monospace; flex-shrink: 0; }
+
+    .add-ingredient-btn {
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      padding: 8px 14px;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .add-ingredient-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .servings-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .servings-row input {
+      width: 80px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.9rem;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .servings-row input:focus { border-color: var(--accent); }
+    .servings-row label { font-size: 0.85rem; color: var(--text-muted); }
+
+    .cal-preview {
+      margin-top: 16px;
+      background: var(--accent-bg);
+      border: 1px solid rgba(232,197,71,0.2);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cal-preview-label { font-size: 0.82rem; color: var(--text-muted); }
+    .cal-preview-val   { font-family: 'DM Mono', monospace; font-size: 1.1rem; color: var(--accent); font-weight: 500; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    /* Ingredient bank suggestions */
+    .ing-wrap {
+      position: relative;
+      flex: 1;
+    }
+
+    .ing-wrap input { width: 100%; }
+
+    .ing-suggestions {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      z-index: 300;
+      max-height: 180px;
+      overflow-y: auto;
+      display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .ing-suggestions.open { display: block; }
+
+    .ing-suggestion {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 0.83rem;
+      transition: background 0.1s;
+    }
+
+    .ing-suggestion:hover { background: var(--surface2); }
+
+    .ing-suggestion-name { color: var(--text); }
+    .ing-suggestion-cal  { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--accent); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="header-top">
+      <h1>Calorie<br><em>Tracker</em></h1>
+      <div class="date-badge" id="todayBadge">—</div>
+    </div>
+    <p class="subtitle">Track what you eat, day by day.</p>
+  </header>
+
+  <!-- Date Nav -->
+  <div class="date-nav">
+    <button id="prevDay" title="Previous day">&#8592;</button>
+    <div class="date-nav-label" id="dateNavLabel">—</div>
+    <button class="today-btn" id="goToday">Today</button>
+    <button id="nextDay" title="Next day">&#8594;</button>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-card">
+    <div class="ring-container">
+      <svg class="ring-svg" width="110" height="110" viewBox="0 0 110 110">
+        <circle class="ring-track" cx="55" cy="55" r="46"/>
+        <circle class="ring-fill" id="ringFill" cx="55" cy="55" r="46"
+                stroke-dasharray="289" stroke-dashoffset="289"
+                transform="rotate(-90 55 55)" stroke="var(--accent)"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-cal" id="ringCal">0</div>
+        <div class="ring-label">eaten</div>
+      </div>
+    </div>
+
+    <div class="summary-stats">
+      <div class="stat-row">
+        <span class="stat-name">Daily Goal</span>
+        <div class="goal-row">
+          <input type="number" id="goalInput" min="100" max="9999" step="50" value="2000" />
+          <label for="goalInput">kcal</label>
+        </div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">Consumed</span>
+        <span class="stat-val gold" id="statConsumed">0 kcal</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">Remaining</span>
+        <span class="stat-val green" id="statRemaining">2000 kcal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Add -->
+  <div class="quick-add-card">
+    <div class="section-head">
+      <span class="section-title">Quick Add</span>
+    </div>
+    <div class="input-row">
+      <div class="ing-wrap" style="flex:1">
+        <input type="text" id="quickName" placeholder="What did you eat? (optional)" autocomplete="off" />
+        <div class="ing-suggestions" id="quickNameSuggestions"></div>
+      </div>
+      <input type="number" id="quickCal" class="cal-input" placeholder="kcal" min="1" max="9999" />
+      <button class="btn" id="quickAddBtn" title="Add"><i class="fa-solid fa-plus"></i></button>
+      <button class="btn btn-ghost" id="quickAddSaveBtn" title="Save meal"><i class="fa-solid fa-floppy-disk"></i></button>
+    </div>
+  </div>
+
+  <!-- Saved Meals -->
+  <div class="meals-card">
+    <div class="section-head">
+      <span class="section-title">Saved Meals</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" id="openIngredientBank"><i class="fa-solid fa-carrot"></i> Ingredients</button>
+        <button class="btn btn-ghost btn-sm" id="openMealBuilder"><i class="fa-solid fa-kitchen-set"></i> Meal Builder</button>
+      </div>
+    </div>
+    <div class="meal-list" id="mealChips">
+      <div class="empty-meals">No saved meals yet.</div>
+    </div>
+  </div>
+
+  <!-- Daily Log -->
+  <div class="log-card">
+    <div class="section-head">
+      <span class="section-title">Today's Log</span>
+      <span class="stat-val gold" id="logCount" style="font-size:0.8rem">0 entries</span>
+    </div>
+    <div class="log-list" id="logList">
+      <div class="empty-log">Nothing logged yet. Start adding!</div>
+    </div>
+    <div class="clear-day-btn">
+      <button class="btn btn-ghost btn-sm" id="clearDayBtn">Clear Day</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Ingredient Bank Modal -->
+<div class="modal-overlay" id="ingredientBankOverlay">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <span class="modal-title">Ingredient Bank</span>
+      <button class="modal-close" id="closeIngredientBank"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="add-meal-form" style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--surface3);border-top:none;margin-top:0;padding-top:0">
+        <input type="text" id="ibNewName" placeholder="Ingredient name" autocomplete="off" />
+        <input type="number" id="ibNewCal" class="cal-input" placeholder="kcal" min="1" max="99999" />
+        <button class="btn btn-sm" id="ibAddBtn"><i class="fa-solid fa-plus"></i> Add</button>
+      </div>
+      <div id="ibList" style="display:flex;flex-direction:column;gap:6px">
+        <div class="empty-meals">No ingredients saved yet.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="closeIngredientBankFooter">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModalOverlay">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <span class="modal-title" id="editModalTitle">Edit Entry</span>
+      <button class="modal-close" id="closeEditModal"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field-label">Name</div>
+        <input type="text" id="editName" placeholder="Name" />
+      </div>
+      <div class="field-group" style="margin-bottom:0">
+        <div class="field-label">Calories (kcal)</div>
+        <input type="number" id="editCal" min="1" max="99999" placeholder="kcal" style="font-family:'DM Mono',monospace" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="cancelEditModal">Cancel</button>
+      <button class="btn" id="saveEditModal"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="mealBuilderOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Meal Builder</span>
+      <button class="modal-close" id="closeMealBuilder"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field-label">Meal Name</div>
+        <input type="text" id="mbMealName" placeholder="e.g. Chicken Stir Fry" />
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Ingredients</div>
+        <div class="ingredients-list" id="ingredientsList"></div>
+        <button class="add-ingredient-btn" id="addIngredientBtn"><i class="fa-solid fa-plus"></i> Add Ingredient</button>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Servings</div>
+        <div class="servings-row">
+          <input type="number" id="mbServings" min="1" max="99" value="1" />
+          <label>servings this recipe makes</label>
+        </div>
+      </div>
+
+      <div class="cal-preview">
+        <span class="cal-preview-label">Calories per serving</span>
+        <span class="cal-preview-val" id="mbCalPreview">— kcal</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="cancelMealBuilder">Cancel</button>
+      <button class="btn" id="saveMealFromBuilder"><i class="fa-solid fa-floppy-disk"></i> Save Meal</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let currentDate = todayKey();
+
+  function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+
+  function pad(n) { return String(n).padStart(2,'0'); }
+
+  function formatDateLabel(key) {
+    const [y,m,d] = key.split('-').map(Number);
+    const date = new Date(y, m-1, d);
+    const opts = { weekday:'long', month:'long', day:'numeric', year:'numeric' };
+    return date.toLocaleDateString('en-US', opts);
+  }
+
+  function formatShortDate(key) {
+    const [y,m,d] = key.split('-').map(Number);
+    const date = new Date(y, m-1, d);
+    return date.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  }
+
+  // ── Storage helpers ────────────────────────────────────────────────────────
+  function getGoal() {
+    return parseInt(localStorage.getItem('cal_goal') || '2000');
+  }
+
+  function setGoal(v) {
+    localStorage.setItem('cal_goal', v);
+  }
+
+  function getDayLog(key) {
+    try { return JSON.parse(localStorage.getItem('cal_day_' + key) || '[]'); }
+    catch { return []; }
+  }
+
+  function setDayLog(key, log) {
+    localStorage.setItem('cal_day_' + key, JSON.stringify(log));
+  }
+
+  function getSavedMeals() {
+    try { return JSON.parse(localStorage.getItem('cal_meals') || '[]'); }
+    catch { return []; }
+  }
+
+  function setSavedMeals(meals) {
+    localStorage.setItem('cal_meals', JSON.stringify(meals));
+  }
+
+  // ── UI refs ────────────────────────────────────────────────────────────────
+  const $todayBadge   = document.getElementById('todayBadge');
+  const $dateNavLabel = document.getElementById('dateNavLabel');
+  const $goalInput    = document.getElementById('goalInput');
+  const $ringFill     = document.getElementById('ringFill');
+  const $ringCal      = document.getElementById('ringCal');
+  const $statConsumed = document.getElementById('statConsumed');
+  const $statRemaining= document.getElementById('statRemaining');
+  const $quickName    = document.getElementById('quickName');
+  const $quickCal     = document.getElementById('quickCal');
+  const $mealChips    = document.getElementById('mealChips');
+  const $logList      = document.getElementById('logList');
+  const $logCount     = document.getElementById('logCount');
+  const $toast        = document.getElementById('toast');
+
+  // ── Ring ───────────────────────────────────────────────────────────────────
+  const CIRC = 2 * Math.PI * 46; // ≈ 289.03
+
+  function updateRing(consumed, goal) {
+    const pct = Math.min(consumed / Math.max(goal, 1), 1);
+    const offset = CIRC * (1 - pct);
+    $ringFill.style.strokeDashoffset = offset;
+    const diff = goal - consumed;
+    $ringFill.style.stroke = diff < 0 ? 'var(--red)' : diff <= 200 ? 'var(--green)' : 'var(--accent)';
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  function render() {
+    const goal     = getGoal();
+    const log      = getDayLog(currentDate);
+    const consumed = log.reduce((s, e) => s + e.cal, 0);
+    const remain   = goal - consumed;
+    const isToday  = currentDate === todayKey();
+
+    // Header badges
+    $todayBadge.textContent = formatShortDate(todayKey());
+    $dateNavLabel.textContent = isToday ? '📅 Today' : formatDateLabel(currentDate);
+
+    // Goal input
+    $goalInput.value = goal;
+
+    // Ring + stats
+    updateRing(consumed, goal);
+    $ringCal.textContent = consumed.toLocaleString();
+    $statConsumed.textContent = consumed.toLocaleString() + ' kcal';
+
+    $statRemaining.textContent = Math.abs(remain).toLocaleString() + ' kcal' + (remain < 0 ? ' over' : '');
+    $statRemaining.className = 'stat-val ' + (remain < 0 ? 'red' : remain === 0 ? 'gold' : 'green');
+
+    // Log
+    $logCount.textContent = log.length + ' entr' + (log.length === 1 ? 'y' : 'ies');
+    if (log.length === 0) {
+      $logList.innerHTML = '<div class="empty-log">Nothing logged yet. Start adding!</div>';
+    } else {
+      $logList.innerHTML = log.slice().reverse().map((e, i) => `
+        <div class="log-item">
+          <span class="log-time">${e.time}</span>
+          <span class="log-name">${esc(e.name)}</span>
+          <span class="log-cal">${e.cal.toLocaleString()}</span>
+          <button class="btn-edit" title="Edit entry" onclick="editEntry(${log.length - 1 - i})"><i class="fa-solid fa-pencil"></i></button>
+          <button class="btn-danger" onclick="removeEntry(${log.length - 1 - i})"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      `).join('');
+    }
+
+    // Saved meals list
+    const meals = getSavedMeals();
+    if (meals.length === 0) {
+      $mealChips.innerHTML = '<div class="empty-meals">No saved meals yet.</div>';
+    } else {
+      $mealChips.innerHTML = meals.map((m, i) => `
+        <div class="log-item">
+          <span class="log-name">${esc(m.name)}</span>
+          <span class="log-cal">${m.cal.toLocaleString()}</span>
+          <button class="btn-add" title="Log this meal" onclick="logSavedMeal(${i})"><i class="fa-solid fa-plus"></i></button>
+          <button class="btn-edit" title="Edit meal" onclick="editSavedMeal(${i})"><i class="fa-solid fa-pencil"></i></button>
+          <button class="btn-danger" title="Delete meal" onclick="deleteSavedMeal(${i})"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      `).join('');
+    }
+  }
+
+  // ── Actions ────────────────────────────────────────────────────────────────
+  function addEntry(name, cal) {
+    const log = getDayLog(currentDate);
+    const now = new Date();
+    log.push({
+      name: name.trim(),
+      cal: cal,
+      time: `${pad(now.getHours())}:${pad(now.getMinutes())}`
+    });
+    setDayLog(currentDate, log);
+    render();
+    toast(`+${cal} kcal added`);
+  }
+
+  function removeEntry(idx) {
+    const log = getDayLog(currentDate);
+    log.splice(idx, 1);
+    setDayLog(currentDate, log);
+    render();
+  }
+
+  function logSavedMeal(idx) {
+    const meals = getSavedMeals();
+    const m = meals[idx];
+    addEntry(m.name, m.cal);
+  }
+
+  function deleteSavedMeal(idx) {
+    const meals = getSavedMeals();
+    meals.splice(idx, 1);
+    setSavedMeals(meals);
+    render();
+  }
+
+  window.removeEntry    = removeEntry;
+  window.logSavedMeal   = logSavedMeal;
+  window.deleteSavedMeal= deleteSavedMeal;
+  window.editEntry      = editEntry;
+  window.editSavedMeal  = editSavedMeal;
+
+  // ── Edit Modal ─────────────────────────────────────────────────────────────
+  const $editOverlay = document.getElementById('editModalOverlay');
+  const $editName    = document.getElementById('editName');
+  const $editCal     = document.getElementById('editCal');
+  let   editContext  = null; // { type: 'log'|'meal', idx }
+
+  function openEditModal(title, name, cal, context) {
+    document.getElementById('editModalTitle').textContent = title;
+    $editName.value = name;
+    $editCal.value  = cal;
+    editContext = context;
+    $editOverlay.classList.add('open');
+    $editName.focus();
+  }
+
+  function closeEditModal() { $editOverlay.classList.remove('open'); editContext = null; }
+
+  function editEntry(idx) {
+    const log = getDayLog(currentDate);
+    const e   = log[idx];
+    openEditModal('Edit Log Entry', e.name, e.cal, { type: 'log', idx });
+  }
+
+  function editSavedMeal(idx) {
+    const meals = getSavedMeals();
+    openMealBuilder(meals[idx], idx);
+  }
+
+  document.getElementById('closeEditModal').addEventListener('click', closeEditModal);
+  document.getElementById('cancelEditModal').addEventListener('click', closeEditModal);
+  $editOverlay.addEventListener('click', e => { if (e.target === $editOverlay) closeEditModal(); });
+
+  document.getElementById('saveEditModal').addEventListener('click', () => {
+    const name = $editName.value.trim();
+    const cal  = parseInt($editCal.value);
+    if (!name)        return toast('Please enter a name.');
+    if (!cal || cal < 1) return toast('Please enter a valid calorie amount.');
+    if (!editContext) return;
+
+    if (editContext.type === 'log') {
+      const log = getDayLog(currentDate);
+      log[editContext.idx].name = name;
+      log[editContext.idx].cal  = cal;
+      setDayLog(currentDate, log);
+    } else {
+      const meals = getSavedMeals();
+      meals[editContext.idx].name = name;
+      meals[editContext.idx].cal  = cal;
+      setSavedMeals(meals);
+    }
+    render();
+    closeEditModal();
+    toast('Changes saved.');
+  });
+
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Toast ──────────────────────────────────────────────────────────────────
+  let toastTimer;
+  function toast(msg) {
+    clearTimeout(toastTimer);
+    $toast.textContent = msg;
+    $toast.classList.add('show');
+    toastTimer = setTimeout(() => $toast.classList.remove('show'), 2000);
+  }
+
+  // ── Event listeners ────────────────────────────────────────────────────────
+  $goalInput.addEventListener('change', () => {
+    const v = Math.max(100, Math.min(9999, parseInt($goalInput.value) || 2000));
+    $goalInput.value = v;
+    setGoal(v);
+    render();
+  });
+
+  document.getElementById('quickAddBtn').addEventListener('click', () => {
+    const cal  = parseInt($quickCal.value);
+    if (!cal || cal < 1) return toast('Please enter a valid calorie amount.');
+    const now  = new Date();
+    const name = $quickName.value.trim() || `Logged at ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    addEntry(name, cal);
+    $quickName.value = '';
+    $quickCal.value  = '';
+    $quickName.focus();
+  });
+
+  // ── Quick Add autofill ─────────────────────────────────────────────────────
+  (function () {
+    const nameInput = document.getElementById('quickName');
+    const calInput  = document.getElementById('quickCal');
+    const sugBox    = document.getElementById('quickNameSuggestions');
+
+    function getCombinedBank() {
+      const bank  = getIngredientBank();
+      const meals = getSavedMeals();
+      const map   = new Map();
+      bank.forEach(b => map.set(b.name.toLowerCase(), { name: b.name, cal: b.cal, tag: 'ingredient' }));
+      meals.forEach(m => {
+        const key = m.name.toLowerCase();
+        if (!map.has(key)) map.set(key, { name: m.name, cal: m.cal, tag: 'meal' });
+      });
+      return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    function showQuickSuggestions(query) {
+      const all = getCombinedBank();
+      const q   = query.toLowerCase().trim();
+      const matches = q ? all.filter(b => b.name.toLowerCase().includes(q)) : all;
+      if (!matches.length) { sugBox.classList.remove('open'); return; }
+      sugBox.innerHTML = matches.map(b => `
+        <div class="ing-suggestion" data-name="${esc(b.name)}" data-cal="${b.cal}">
+          <span class="ing-suggestion-name">${esc(b.name)}</span>
+          <span class="ing-suggestion-cal">${b.cal} kcal
+            <span style="font-size:0.65rem;color:var(--text-dim);margin-left:4px">${b.tag}</span>
+          </span>
+        </div>
+      `).join('');
+      sugBox.classList.add('open');
+      sugBox.querySelectorAll('.ing-suggestion').forEach(el => {
+        el.addEventListener('mousedown', e => {
+          e.preventDefault();
+          nameInput.value = el.dataset.name;
+          calInput.value  = el.dataset.cal;
+          sugBox.classList.remove('open');
+          calInput.focus();
+        });
+      });
+    }
+
+    nameInput.addEventListener('input', () => showQuickSuggestions(nameInput.value));
+    nameInput.addEventListener('focus', () => showQuickSuggestions(nameInput.value));
+    nameInput.addEventListener('blur',  () => setTimeout(() => sugBox.classList.remove('open'), 150));
+  })();
+
+  [$quickName, $quickCal].forEach(el => el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('quickAddBtn').click();
+  }));
+
+  document.getElementById('quickAddSaveBtn').addEventListener('click', () => {
+    const cal  = parseInt($quickCal.value);
+    if (!cal || cal < 1) return toast('Please enter a valid calorie amount.');
+    const name = $quickName.value.trim();
+    if (!name) return toast('Please enter a name to save a meal.');
+    const meals = getSavedMeals();
+    if (meals.find(m => m.name.toLowerCase() === name.toLowerCase())) {
+      return toast(`"${name}" is already saved.`);
+    }
+    meals.push({ name, cal });
+    setSavedMeals(meals);
+    render();
+    toast(`"${name}" saved!`);
+  });
+
+  document.getElementById('clearDayBtn').addEventListener('click', () => {
+    if (!getDayLog(currentDate).length) return toast('Nothing to clear.');
+    if (confirm('Clear all entries for this day?')) {
+      setDayLog(currentDate, []);
+      render();
+    }
+  });
+
+  // Date nav
+  function shiftDate(days) {
+    const [y,m,d] = currentDate.split('-').map(Number);
+    const dt = new Date(y, m-1, d);
+    dt.setDate(dt.getDate() + days);
+    currentDate = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+    render();
+  }
+
+  document.getElementById('prevDay').addEventListener('click', () => shiftDate(-1));
+  document.getElementById('nextDay').addEventListener('click', () => shiftDate(1));
+  document.getElementById('goToday').addEventListener('click', () => {
+    currentDate = todayKey();
+    render();
+  });
+
+  // ── Meal Builder ───────────────────────────────────────────────────────────
+  const $overlay        = document.getElementById('mealBuilderOverlay');
+  const $mbMealName     = document.getElementById('mbMealName');
+  const $ingredientsList= document.getElementById('ingredientsList');
+  const $mbServings     = document.getElementById('mbServings');
+  const $mbCalPreview   = document.getElementById('mbCalPreview');
+
+  function getIngredientBank() {
+    try { return JSON.parse(localStorage.getItem('cal_ing_bank') || '[]'); }
+    catch { return []; }
+  }
+
+  function setIngredientBank(bank) {
+    localStorage.setItem('cal_ing_bank', JSON.stringify(bank));
+  }
+
+  function mergeIngredientsToBank(ingredients) {
+    const bank = getIngredientBank();
+    ingredients.forEach(ing => {
+      if (!ing.name) return;
+      const key = ing.name.toLowerCase();
+      const existing = bank.find(b => b.name.toLowerCase() === key);
+      if (existing) {
+        existing.cal = ing.cal; // update to latest
+      } else {
+        bank.push({ name: ing.name, cal: ing.cal });
+      }
+    });
+    bank.sort((a, b) => a.name.localeCompare(b.name));
+    setIngredientBank(bank);
+  }
+
+  let mbEditIndex = null;
+
+  function openMealBuilder(meal = null, editIdx = null) {
+    mbEditIndex = editIdx;
+    $mbMealName.value = meal ? meal.name : '';
+    $mbServings.value = meal ? meal.servings || 1 : 1;
+    $ingredientsList.innerHTML = '';
+    if (meal && meal.ingredients && meal.ingredients.length) {
+      meal.ingredients.forEach(ing => addIngredientRow(ing.name, ing.cal));
+    } else {
+      addIngredientRow();
+    }
+    document.getElementById('editModalTitle');
+    document.querySelector('#mealBuilderOverlay .modal-title').textContent =
+      editIdx !== null ? 'Edit Meal' : 'Meal Builder';
+    updateCalPreview();
+    $overlay.classList.add('open');
+    $mbMealName.focus();
+  }
+
+  function closeMealBuilder() {
+    $overlay.classList.remove('open');
+    mbEditIndex = null;
+  }
+
+  function addIngredientRow(name = '', cal = '') {
+    const row = document.createElement('div');
+    row.className = 'ingredient-row';
+    row.innerHTML = `
+      <div class="ing-wrap">
+        <input type="text" class="ing-name" placeholder="Ingredient name" value="${esc(name)}" autocomplete="off" />
+        <div class="ing-suggestions"></div>
+      </div>
+      <input type="number" class="ing-cal" placeholder="kcal" min="0" max="99999" value="${cal}" />
+      <button class="btn-danger" title="Remove"><i class="fa-solid fa-trash"></i></button>
+    `;
+
+    const nameInput = row.querySelector('.ing-name');
+    const calInput  = row.querySelector('.ing-cal');
+    const sugBox    = row.querySelector('.ing-suggestions');
+
+    function showSuggestions(query) {
+      const bank = getIngredientBank();
+      const q = query.toLowerCase().trim();
+      const matches = q
+        ? bank.filter(b => b.name.toLowerCase().includes(q))
+        : bank;
+      if (!matches.length) { sugBox.classList.remove('open'); return; }
+      sugBox.innerHTML = matches.map(b => `
+        <div class="ing-suggestion" data-name="${esc(b.name)}" data-cal="${b.cal}">
+          <span class="ing-suggestion-name">${esc(b.name)}</span>
+          <span class="ing-suggestion-cal">${b.cal} kcal</span>
+        </div>
+      `).join('');
+      sugBox.classList.add('open');
+      sugBox.querySelectorAll('.ing-suggestion').forEach(el => {
+        el.addEventListener('mousedown', e => {
+          e.preventDefault();
+          nameInput.value = el.dataset.name;
+          calInput.value  = el.dataset.cal;
+          sugBox.classList.remove('open');
+          updateCalPreview();
+        });
+      });
+    }
+
+    nameInput.addEventListener('input', () => showSuggestions(nameInput.value));
+    nameInput.addEventListener('focus', () => showSuggestions(nameInput.value));
+    nameInput.addEventListener('blur',  () => setTimeout(() => sugBox.classList.remove('open'), 150));
+    calInput.addEventListener('input', updateCalPreview);
+
+    row.querySelector('.btn-danger').addEventListener('click', () => {
+      row.remove();
+      updateCalPreview();
+    });
+
+    $ingredientsList.appendChild(row);
+  }
+
+  function updateCalPreview() {
+    const servings = Math.max(1, parseInt($mbServings.value) || 1);
+    let total = 0;
+    $ingredientsList.querySelectorAll('.ingredient-row').forEach(row => {
+      total += parseInt(row.querySelector('.ing-cal').value) || 0;
+    });
+    const perServing = Math.round(total / servings);
+    $mbCalPreview.textContent = total === 0 ? '— kcal' : `${perServing.toLocaleString()} kcal`;
+  }
+
+  document.getElementById('openMealBuilder').addEventListener('click', () => openMealBuilder());
+  document.getElementById('closeMealBuilder').addEventListener('click', closeMealBuilder);
+  document.getElementById('cancelMealBuilder').addEventListener('click', closeMealBuilder);
+  $overlay.addEventListener('click', e => { if (e.target === $overlay) closeMealBuilder(); });
+
+  document.getElementById('addIngredientBtn').addEventListener('click', () => {
+    addIngredientRow();
+  });
+
+  $mbServings.addEventListener('input', updateCalPreview);
+
+  document.getElementById('saveMealFromBuilder').addEventListener('click', () => {
+    const name = $mbMealName.value.trim();
+    if (!name) return toast('Please enter a meal name.');
+    const servings = Math.max(1, parseInt($mbServings.value) || 1);
+    const ingredients = [];
+    $ingredientsList.querySelectorAll('.ingredient-row').forEach(row => {
+      const ingName = row.querySelector('.ing-name').value.trim();
+      const ingCal  = parseInt(row.querySelector('.ing-cal').value) || 0;
+      ingredients.push({ name: ingName, cal: ingCal });
+    });
+    const total = ingredients.reduce((s, g) => s + g.cal, 0);
+    if (total === 0) return toast('Please add at least one ingredient with calories.');
+    const cal = Math.round(total / servings);
+    const meals = getSavedMeals();
+    if (mbEditIndex === null && meals.find(m => m.name.toLowerCase() === name.toLowerCase())) {
+      return toast(`"${name}" is already saved.`);
+    }
+    const mealObj = { name, cal, ingredients, servings };
+    if (mbEditIndex !== null) {
+      meals[mbEditIndex] = mealObj;
+    } else {
+      meals.push(mealObj);
+    }
+    setSavedMeals(meals);
+    mergeIngredientsToBank(ingredients.filter(i => i.name));
+    render();
+    closeMealBuilder();
+    toast(`"${name}" saved — ${cal} kcal/serving`);
+  });
+
+  // ── Ingredient Bank Modal ──────────────────────────────────────────────────
+  const $ibOverlay = document.getElementById('ingredientBankOverlay');
+  const $ibList    = document.getElementById('ibList');
+  const $ibNewName = document.getElementById('ibNewName');
+  const $ibNewCal  = document.getElementById('ibNewCal');
+
+  function openIngredientBank() {
+    renderIngredientBank();
+    $ibOverlay.classList.add('open');
+    $ibNewName.focus();
+  }
+
+  function closeIngredientBank() {
+    $ibOverlay.classList.remove('open');
+  }
+
+  function renderIngredientBank() {
+    const bank = getIngredientBank();
+    if (!bank.length) {
+      $ibList.innerHTML = '<div class="empty-meals">No ingredients saved yet.</div>';
+      return;
+    }
+    $ibList.innerHTML = bank.map((ing, i) => `
+      <div class="log-item" id="ib-row-${i}">
+        <span class="log-name" id="ib-name-${i}">${esc(ing.name)}</span>
+        <span class="log-cal" id="ib-cal-${i}">${ing.cal.toLocaleString()} kcal</span>
+        <button class="btn-edit" title="Edit" onclick="ibEdit(${i})"><i class="fa-solid fa-pencil"></i></button>
+        <button class="btn-danger" title="Delete" onclick="ibDelete(${i})"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    `).join('');
+  }
+
+  window.ibEdit = function(idx) {
+    const bank = getIngredientBank();
+    const ing  = bank[idx];
+    const row  = document.getElementById(`ib-row-${idx}`);
+    // Replace row with inline edit inputs
+    row.innerHTML = `
+      <input type="text" class="ing-edit-name" value="${esc(ing.name)}" style="flex:1;background:var(--surface3);border:1px solid var(--accent);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;padding:5px 10px;outline:none" />
+      <input type="number" class="ing-edit-cal" value="${ing.cal}" style="width:80px;background:var(--surface3);border:1px solid var(--accent);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.85rem;padding:5px 8px;outline:none" />
+      <button class="btn-add" title="Save" onclick="ibSaveEdit(${idx})"><i class="fa-solid fa-floppy-disk"></i></button>
+      <button class="btn-danger" title="Cancel" onclick="renderIngredientBank()"><i class="fa-solid fa-xmark"></i></button>
+    `;
+    row.querySelector('.ing-edit-name').focus();
+    row.querySelector('.ing-edit-name').addEventListener('keydown', e => { if (e.key === 'Enter') ibSaveEdit(idx); });
+    row.querySelector('.ing-edit-cal').addEventListener('keydown',  e => { if (e.key === 'Enter') ibSaveEdit(idx); });
+  };
+
+  window.ibSaveEdit = function(idx) {
+    const row     = document.getElementById(`ib-row-${idx}`);
+    const newName = row.querySelector('.ing-edit-name').value.trim();
+    const newCal  = parseInt(row.querySelector('.ing-edit-cal').value);
+    if (!newName)          return toast('Name cannot be empty.');
+    if (!newCal || newCal < 1) return toast('Please enter a valid calorie amount.');
+    const bank = getIngredientBank();
+    bank[idx] = { name: newName, cal: newCal };
+    bank.sort((a, b) => a.name.localeCompare(b.name));
+    setIngredientBank(bank);
+    renderIngredientBank();
+    toast('Ingredient updated.');
+  };
+
+  window.ibDelete = function(idx) {
+    const bank = getIngredientBank();
+    bank.splice(idx, 1);
+    setIngredientBank(bank);
+    renderIngredientBank();
+    toast('Ingredient removed.');
+  };
+
+  document.getElementById('ibAddBtn').addEventListener('click', () => {
+    const name = $ibNewName.value.trim();
+    const cal  = parseInt($ibNewCal.value);
+    if (!name)        return toast('Please enter an ingredient name.');
+    if (!cal || cal < 1) return toast('Please enter a valid calorie amount.');
+    mergeIngredientsToBank([{ name, cal }]);
+    $ibNewName.value = '';
+    $ibNewCal.value  = '';
+    $ibNewName.focus();
+    renderIngredientBank();
+    toast(`"${name}" added to bank.`);
+  });
+
+  [$ibNewName, $ibNewCal].forEach(el => el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('ibAddBtn').click();
+  }));
+
+  document.getElementById('openIngredientBank').addEventListener('click', openIngredientBank);
+  document.getElementById('closeIngredientBank').addEventListener('click', closeIngredientBank);
+  document.getElementById('closeIngredientBankFooter').addEventListener('click', closeIngredientBank);
+  $ibOverlay.addEventListener('click', e => { if (e.target === $ibOverlay) closeIngredientBank(); });
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>
