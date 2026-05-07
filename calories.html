@@ -1,12 +1,3 @@
----
-prompts:
-- Update the edit buttons to be a darkish green.
-- Move the add and save buttons to the upper right corner of the Quick add section, on the same line as the Quick Add text.
-- Add a multiplier next to the ingredients to show the quantity of the ingredient that was used.
-- Add an export and import button that copies the meals, ingredients and calorie history into and out of the clipboard.
-- Rename the Ingredient Bank to just Ingredients
-- The progress ring should be green if the total is withing 200 above or below the goal
----
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -289,7 +280,7 @@ prompts:
     .input-row {
       display: flex;
       gap: 10px;
-      margin-top: 14px;
+      margin-top: 10px;
     }
 
     .input-row input {
@@ -341,8 +332,8 @@ prompts:
     .btn-danger:hover { border-color: var(--red); background: rgba(232,116,71,0.08); }
     .btn-add { background: transparent; color: var(--accent); border: 1px solid transparent; padding: 4px 8px; font-size: 0.75rem; }
     .btn-add:hover { border-color: var(--accent); background: var(--accent-bg); }
-    .btn-edit { background: transparent; color: var(--text-muted); border: 1px solid transparent; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; }
-    .btn-edit:hover { color: var(--text); border-color: var(--border); background: var(--surface3); }
+    .btn-edit { background: transparent; color: #3a7d55; border: 1px solid transparent; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; }
+    .btn-edit:hover { color: #4e9e6e; border-color: #3a7d55; background: rgba(58,125,85,0.12); }
 
     /* Saved meals */
     .meals-card {
@@ -644,7 +635,35 @@ prompts:
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    /* Ingredient bank suggestions */
+    .field-group select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      appearance: none;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a776f' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+    .field-group select:focus { border-color: var(--accent); }
+    .field-group select option { background: var(--surface2); color: var(--text); }
+
+    .ing-unit-badge {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      font-family: 'DM Mono', monospace;
+      flex-shrink: 0;
+      min-width: 36px;
+      text-align: right;
+    }
     .ing-wrap {
       position: relative;
       flex: 1;
@@ -691,7 +710,13 @@ prompts:
   <header>
     <div class="header-top">
       <h1>Calorie<br><em>Tracker</em></h1>
-      <div class="date-badge" id="todayBadge">—</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <div class="date-badge" id="todayBadge">—</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" id="exportBtn" title="Export data to clipboard"><i class="fa-solid fa-file-export"></i> Export</button>
+          <button class="btn btn-ghost btn-sm" id="importBtn" title="Import data from clipboard"><i class="fa-solid fa-file-import"></i> Import</button>
+        </div>
+      </div>
     </div>
     <p class="subtitle">Track what you eat, day by day.</p>
   </header>
@@ -742,6 +767,10 @@ prompts:
   <div class="quick-add-card">
     <div class="section-head">
       <span class="section-title">Quick Add</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" id="quickAddSaveBtn" title="Save as meal"><i class="fa-solid fa-floppy-disk"></i></button>
+        <button class="btn btn-sm" id="quickAddBtn" title="Add"><i class="fa-solid fa-plus"></i></button>
+      </div>
     </div>
     <div class="input-row">
       <div class="ing-wrap" style="flex:1">
@@ -749,8 +778,6 @@ prompts:
         <div class="ing-suggestions" id="quickNameSuggestions"></div>
       </div>
       <input type="number" id="quickCal" class="cal-input" placeholder="kcal" min="1" max="9999" />
-      <button class="btn" id="quickAddBtn" title="Add"><i class="fa-solid fa-plus"></i></button>
-      <button class="btn btn-ghost" id="quickAddSaveBtn" title="Save meal"><i class="fa-solid fa-floppy-disk"></i></button>
     </div>
   </div>
 
@@ -790,14 +817,32 @@ prompts:
 <div class="modal-overlay" id="ingredientBankOverlay">
   <div class="modal" style="max-width:460px">
     <div class="modal-header">
-      <span class="modal-title">Ingredient Bank</span>
+      <span class="modal-title">Ingredients</span>
       <button class="modal-close" id="closeIngredientBank"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
-      <div class="add-meal-form" style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--surface3);border-top:none;margin-top:0;padding-top:0">
-        <input type="text" id="ibNewName" placeholder="Ingredient name" autocomplete="off" />
-        <input type="number" id="ibNewCal" class="cal-input" placeholder="kcal" min="1" max="99999" />
-        <button class="btn btn-sm" id="ibAddBtn"><i class="fa-solid fa-plus"></i> Add</button>
+      <div style="display:flex;gap:10px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--surface3)">
+        <div class="field-group" style="flex:1;margin-bottom:0">
+          <div class="field-label">Name</div>
+          <input type="text" id="ibNewName" placeholder="Ingredient name" autocomplete="off" />
+        </div>
+        <div class="field-group" style="width:120px;margin-bottom:0">
+          <div class="field-label">Unit</div>
+          <select id="ibNewUnit">
+            <option value="each">Each</option>
+            <option value="cup">Cup</option>
+            <option value="tbsp">Tablespoon</option>
+            <option value="tsp">Teaspoon</option>
+            <option value="g">Gram</option>
+          </select>
+        </div>
+        <div class="field-group" style="width:90px;margin-bottom:0">
+          <div class="field-label">Calories</div>
+          <input type="number" id="ibNewCal" placeholder="kcal" min="1" max="99999" style="font-family:'DM Mono',monospace" />
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn btn-sm" id="ibAddBtn"><i class="fa-solid fa-plus"></i> Add</button>
+        </div>
       </div>
       <div id="ibList" style="display:flex;flex-direction:column;gap:6px">
         <div class="empty-meals">No ingredients saved yet.</div>
@@ -943,8 +988,8 @@ prompts:
     const pct = Math.min(consumed / Math.max(goal, 1), 1);
     const offset = CIRC * (1 - pct);
     $ringFill.style.strokeDashoffset = offset;
-    const diff = goal - consumed;
-    $ringFill.style.stroke = diff < 0 ? 'var(--red)' : diff <= 200 ? 'var(--green)' : 'var(--accent)';
+    const diff = Math.abs(goal - consumed);
+    $ringFill.style.stroke = consumed > goal + 200 ? 'var(--red)' : diff <= 200 ? 'var(--green)' : 'var(--accent)';
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -1244,9 +1289,10 @@ prompts:
       const key = ing.name.toLowerCase();
       const existing = bank.find(b => b.name.toLowerCase() === key);
       if (existing) {
-        existing.cal = ing.cal; // update to latest
+        existing.cal  = ing.cal;
+        if (ing.unit) existing.unit = ing.unit;
       } else {
-        bank.push({ name: ing.name, cal: ing.cal });
+        bank.push({ name: ing.name, unit: ing.unit || 'each', cal: ing.cal });
       }
     });
     bank.sort((a, b) => a.name.localeCompare(b.name));
@@ -1261,7 +1307,7 @@ prompts:
     $mbServings.value = meal ? meal.servings || 1 : 1;
     $ingredientsList.innerHTML = '';
     if (meal && meal.ingredients && meal.ingredients.length) {
-      meal.ingredients.forEach(ing => addIngredientRow(ing.name, ing.cal));
+      meal.ingredients.forEach(ing => addIngredientRow(ing.name, ing.cal, ing.qty || 1, ing.unit || 'each'));
     } else {
       addIngredientRow();
     }
@@ -1278,21 +1324,70 @@ prompts:
     mbEditIndex = null;
   }
 
-  function addIngredientRow(name = '', cal = '') {
+  // Unit conversion ratios relative to teaspoon (tsp = 1)
+  const UNIT_TO_TSP = { tsp: 1, tbsp: 3, cup: 48 };
+  const VOLUME_UNITS = new Set(['tsp', 'tbsp', 'cup']);
+
+  function applyUnitSelectState(unitSel, calInput) {
+    const u = unitSel.value;
+    if (VOLUME_UNITS.has(u)) {
+      unitSel.disabled = false;
+      unitSel.style.opacity = '1';
+      unitSel.style.cursor = 'pointer';
+    } else {
+      unitSel.disabled = true;
+      unitSel.style.opacity = '0.45';
+      unitSel.style.cursor = 'default';
+    }
+  }
+
+  function addIngredientRow(name = '', cal = '', qty = 1, unit = 'each') {
     const row = document.createElement('div');
     row.className = 'ingredient-row';
+    const allUnits = ['each','cup','tbsp','tsp','g'];
+    const unitOptions = allUnits
+      .map(u => {
+        const isVolume = VOLUME_UNITS.has(unit);
+        const disabled = isVolume && !VOLUME_UNITS.has(u) ? ' disabled' : '';
+        return `<option value="${u}"${unit===u?' selected':''}${disabled}>${UNIT_LABELS[u]}</option>`;
+      })
+      .join('');
     row.innerHTML = `
       <div class="ing-wrap">
         <input type="text" class="ing-name" placeholder="Ingredient name" value="${esc(name)}" autocomplete="off" />
         <div class="ing-suggestions"></div>
       </div>
+      <select class="ing-unit" title="Unit (volume units only — changes scale calories)" style="width:62px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;padding:6px 4px;outline:none;flex-shrink:0">${unitOptions}</select>
+      <input type="number" class="ing-qty" placeholder="×" min="0.25" max="99" step="0.25" value="${qty}" title="Quantity" style="width:54px;font-family:'DM Mono',monospace;text-align:center" />
       <input type="number" class="ing-cal" placeholder="kcal" min="0" max="99999" value="${cal}" />
       <button class="btn-danger" title="Remove"><i class="fa-solid fa-trash"></i></button>
     `;
 
     const nameInput = row.querySelector('.ing-name');
     const calInput  = row.querySelector('.ing-cal');
+    const qtyInput  = row.querySelector('.ing-qty');
+    const unitSel   = row.querySelector('.ing-unit');
     const sugBox    = row.querySelector('.ing-suggestions');
+
+    // Set initial disabled state
+    applyUnitSelectState(unitSel, calInput);
+
+    // Scale calories when unit changes (volume units only)
+    unitSel.addEventListener('change', () => {
+      const fromUnit = unitSel.dataset.prevUnit || unit;
+      const toUnit   = unitSel.value;
+      if (VOLUME_UNITS.has(fromUnit) && VOLUME_UNITS.has(toUnit) && fromUnit !== toUnit) {
+        const currentCal = parseFloat(calInput.value) || 0;
+        if (currentCal > 0) {
+          const ratio = UNIT_TO_TSP[toUnit] / UNIT_TO_TSP[fromUnit];
+          calInput.value = Math.round(currentCal * ratio);
+        }
+      }
+      unitSel.dataset.prevUnit = toUnit;
+      applyUnitSelectState(unitSel, calInput);
+      updateCalPreview();
+    });
+    unitSel.dataset.prevUnit = unit;
 
     function showSuggestions(query) {
       const bank = getIngredientBank();
@@ -1302,17 +1397,27 @@ prompts:
         : bank;
       if (!matches.length) { sugBox.classList.remove('open'); return; }
       sugBox.innerHTML = matches.map(b => `
-        <div class="ing-suggestion" data-name="${esc(b.name)}" data-cal="${b.cal}">
+        <div class="ing-suggestion" data-name="${esc(b.name)}" data-cal="${b.cal}" data-unit="${b.unit||'each'}">
           <span class="ing-suggestion-name">${esc(b.name)}</span>
-          <span class="ing-suggestion-cal">${b.cal} kcal</span>
+          <span class="ing-suggestion-cal">${b.cal} kcal <span style="font-size:0.65rem;color:var(--text-dim)">${UNIT_LABELS[b.unit||'each']}</span></span>
         </div>
       `).join('');
       sugBox.classList.add('open');
       sugBox.querySelectorAll('.ing-suggestion').forEach(el => {
         el.addEventListener('mousedown', e => {
           e.preventDefault();
+          const newUnit = el.dataset.unit || 'each';
           nameInput.value = el.dataset.name;
           calInput.value  = el.dataset.cal;
+          // Rebuild options with correct disabled state for new unit
+          const isVolume = VOLUME_UNITS.has(newUnit);
+          unitSel.innerHTML = ['each','cup','tbsp','tsp','g'].map(u => {
+            const disabled = isVolume && !VOLUME_UNITS.has(u) ? ' disabled' : '';
+            return `<option value="${u}"${newUnit===u?' selected':''}${disabled}>${UNIT_LABELS[u]}</option>`;
+          }).join('');
+          unitSel.value = newUnit;
+          unitSel.dataset.prevUnit = newUnit;
+          applyUnitSelectState(unitSel, calInput);
           sugBox.classList.remove('open');
           updateCalPreview();
         });
@@ -1323,6 +1428,7 @@ prompts:
     nameInput.addEventListener('focus', () => showSuggestions(nameInput.value));
     nameInput.addEventListener('blur',  () => setTimeout(() => sugBox.classList.remove('open'), 150));
     calInput.addEventListener('input', updateCalPreview);
+    qtyInput.addEventListener('input', updateCalPreview);
 
     row.querySelector('.btn-danger').addEventListener('click', () => {
       row.remove();
@@ -1336,7 +1442,9 @@ prompts:
     const servings = Math.max(1, parseInt($mbServings.value) || 1);
     let total = 0;
     $ingredientsList.querySelectorAll('.ingredient-row').forEach(row => {
-      total += parseInt(row.querySelector('.ing-cal').value) || 0;
+      const cal = parseInt(row.querySelector('.ing-cal').value) || 0;
+      const qty = parseFloat(row.querySelector('.ing-qty').value) || 1;
+      total += cal * qty;
     });
     const perServing = Math.round(total / servings);
     $mbCalPreview.textContent = total === 0 ? '— kcal' : `${perServing.toLocaleString()} kcal`;
@@ -1360,10 +1468,12 @@ prompts:
     const ingredients = [];
     $ingredientsList.querySelectorAll('.ingredient-row').forEach(row => {
       const ingName = row.querySelector('.ing-name').value.trim();
+      const ingUnit = row.querySelector('.ing-unit').value;
       const ingCal  = parseInt(row.querySelector('.ing-cal').value) || 0;
-      ingredients.push({ name: ingName, cal: ingCal });
+      const ingQty  = parseFloat(row.querySelector('.ing-qty').value) || 1;
+      ingredients.push({ name: ingName, unit: ingUnit, cal: ingCal, qty: ingQty });
     });
-    const total = ingredients.reduce((s, g) => s + g.cal, 0);
+    const total = ingredients.reduce((s, g) => s + g.cal * g.qty, 0);
     if (total === 0) return toast('Please add at least one ingredient with calories.');
     const cal = Math.round(total / servings);
     const meals = getSavedMeals();
@@ -1399,6 +1509,8 @@ prompts:
     $ibOverlay.classList.remove('open');
   }
 
+  const UNIT_LABELS = { each: 'ea', cup: 'cup', tbsp: 'tbsp', tsp: 'tsp', g: 'g' };
+
   function renderIngredientBank() {
     const bank = getIngredientBank();
     if (!bank.length) {
@@ -1408,6 +1520,7 @@ prompts:
     $ibList.innerHTML = bank.map((ing, i) => `
       <div class="log-item" id="ib-row-${i}">
         <span class="log-name" id="ib-name-${i}">${esc(ing.name)}</span>
+        <span class="ing-unit-badge">${UNIT_LABELS[ing.unit] || 'ea'}</span>
         <span class="log-cal" id="ib-cal-${i}">${ing.cal.toLocaleString()} kcal</span>
         <button class="btn-edit" title="Edit" onclick="ibEdit(${i})"><i class="fa-solid fa-pencil"></i></button>
         <button class="btn-danger" title="Delete" onclick="ibDelete(${i})"><i class="fa-solid fa-trash"></i></button>
@@ -1419,10 +1532,14 @@ prompts:
     const bank = getIngredientBank();
     const ing  = bank[idx];
     const row  = document.getElementById(`ib-row-${idx}`);
-    // Replace row with inline edit inputs
+    const unitOptions = ['each','cup','tbsp','tsp','g']
+      .map(u => `<option value="${u}"${(ing.unit||'each')===u?' selected':''}>${UNIT_LABELS[u]}</option>`)
+      .join('');
+    const inputStyle = 'background:var(--surface3);border:1px solid var(--accent);border-radius:6px;color:var(--text);font-size:0.85rem;padding:5px 8px;outline:none';
     row.innerHTML = `
-      <input type="text" class="ing-edit-name" value="${esc(ing.name)}" style="flex:1;background:var(--surface3);border:1px solid var(--accent);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;padding:5px 10px;outline:none" />
-      <input type="number" class="ing-edit-cal" value="${ing.cal}" style="width:80px;background:var(--surface3);border:1px solid var(--accent);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.85rem;padding:5px 8px;outline:none" />
+      <input type="text" class="ing-edit-name" value="${esc(ing.name)}" style="flex:1;font-family:'DM Sans',sans-serif;${inputStyle}" />
+      <select class="ing-edit-unit" style="width:68px;font-family:'DM Sans',sans-serif;cursor:pointer;${inputStyle}">${unitOptions}</select>
+      <input type="number" class="ing-edit-cal" value="${ing.cal}" style="width:76px;font-family:'DM Mono',monospace;${inputStyle}" />
       <button class="btn-add" title="Save" onclick="ibSaveEdit(${idx})"><i class="fa-solid fa-floppy-disk"></i></button>
       <button class="btn-danger" title="Cancel" onclick="renderIngredientBank()"><i class="fa-solid fa-xmark"></i></button>
     `;
@@ -1434,11 +1551,12 @@ prompts:
   window.ibSaveEdit = function(idx) {
     const row     = document.getElementById(`ib-row-${idx}`);
     const newName = row.querySelector('.ing-edit-name').value.trim();
+    const newUnit = row.querySelector('.ing-edit-unit').value;
     const newCal  = parseInt(row.querySelector('.ing-edit-cal').value);
     if (!newName)          return toast('Name cannot be empty.');
     if (!newCal || newCal < 1) return toast('Please enter a valid calorie amount.');
     const bank = getIngredientBank();
-    bank[idx] = { name: newName, cal: newCal };
+    bank[idx] = { name: newName, unit: newUnit, cal: newCal };
     bank.sort((a, b) => a.name.localeCompare(b.name));
     setIngredientBank(bank);
     renderIngredientBank();
@@ -1455,10 +1573,11 @@ prompts:
 
   document.getElementById('ibAddBtn').addEventListener('click', () => {
     const name = $ibNewName.value.trim();
+    const unit = document.getElementById('ibNewUnit').value;
     const cal  = parseInt($ibNewCal.value);
     if (!name)        return toast('Please enter an ingredient name.');
     if (!cal || cal < 1) return toast('Please enter a valid calorie amount.');
-    mergeIngredientsToBank([{ name, cal }]);
+    mergeIngredientsToBank([{ name, unit, cal }]);
     $ibNewName.value = '';
     $ibNewCal.value  = '';
     $ibNewName.focus();
@@ -1474,6 +1593,58 @@ prompts:
   document.getElementById('closeIngredientBank').addEventListener('click', closeIngredientBank);
   document.getElementById('closeIngredientBankFooter').addEventListener('click', closeIngredientBank);
   $ibOverlay.addEventListener('click', e => { if (e.target === $ibOverlay) closeIngredientBank(); });
+
+  // ── Export / Import ────────────────────────────────────────────────────────
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    // Collect all day logs
+    const days = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith('cal_day_')) {
+        try { days[key.replace('cal_day_', '')] = JSON.parse(localStorage.getItem(key)); }
+        catch {}
+      }
+    }
+    const payload = {
+      version: 1,
+      exported: new Date().toISOString(),
+      goal: getGoal(),
+      meals: getSavedMeals(),
+      ingredients: getIngredientBank(),
+      days
+    };
+    const json = JSON.stringify(payload, null, 2);
+    navigator.clipboard.writeText(json).then(() => {
+      toast('Data copied to clipboard!');
+    }).catch(() => {
+      toast('Clipboard write failed — check browser permissions.');
+    });
+  });
+
+  document.getElementById('importBtn').addEventListener('click', async () => {
+    let text;
+    try {
+      text = await navigator.clipboard.readText();
+    } catch {
+      toast('Clipboard read failed — check browser permissions.');
+      return;
+    }
+    let payload;
+    try { payload = JSON.parse(text); }
+    catch { toast('Clipboard does not contain valid JSON.'); return; }
+    if (!payload.version || !payload.meals || !payload.ingredients || !payload.days) {
+      toast('Import data looks invalid or incomplete.'); return;
+    }
+    if (!confirm(`Import data exported on ${new Date(payload.exported).toLocaleString()}?\n\nThis will overwrite your current meals, ingredients and goal. Day history will be merged.`)) return;
+    setGoal(payload.goal || 2000);
+    setSavedMeals(payload.meals || []);
+    setIngredientBank(payload.ingredients || []);
+    Object.entries(payload.days).forEach(([date, log]) => {
+      setDayLog(date, log);
+    });
+    render();
+    toast('Import successful!');
+  });
 
   // ── Init ───────────────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', render);
