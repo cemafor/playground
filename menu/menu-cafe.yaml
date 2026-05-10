@@ -6,17 +6,23 @@ restaurant:
 menu:
   - category: "Coffee"
     items:
-      - name: "Coffee"
-      - name: "Other Coffee"
+      - name: "Skinnygirl Salted Caramel"
+      - name: "Warm Hug Caramel Spice"
+      - name: "Amaretto"
+      - name: "Michigan Cherry"
+      - name: "Vanilla Macadamia Nut"
+      - name: "Coconut+Mocha"
+      - name: "Butter Pecan"
+      - name: "Café Du Monde Coffee and Chicory"
 
-  - category: "Decafe"
+  - category: "Low-caff"
     items:
-      - name: "Decafe"
-      - name: "Decafe 2"
+      - name: "Green Mountain Half-Caff"
+      - name: "Decaff 2"
 
   - category: "Tea"
     items:
-      - name: "Tea"
+      - name: "Chamomile"
 
   - category: "Hot Chocolate"
     items:
