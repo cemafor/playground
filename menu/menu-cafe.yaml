@@ -2,7 +2,7 @@ restaurant:
   name: "☕ Mama's Café!"
   slogan: "Warm your belly and your heart"
   hours: "Open Daily"
-  location: "📞 (555) 867-5309 | 📍 Mama'House"
+  location: "📞 (555) 867-5309 | 📍 Mama's House"
 menu:
   - category: "Coffee"
     items:
