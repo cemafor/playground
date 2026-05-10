@@ -1,0 +1,307 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f9f7f4;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0b7e0b 0%, #49a751 100%);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .menu-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        }
+
+        .menu-section h2 {
+            color: #0b7e0b;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #49a751;
+            padding-bottom: 0.5rem;
+        }
+
+        .menu-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .menu-item {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1.5rem;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .item-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .item-price {
+            font-size: 1.2rem;
+            color: #0b7e0b;
+            font-weight: bold;
+        }
+
+        .item-description {
+            color: #666;
+            font-size: 0.95rem;
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .tag {
+            background: #ccffbd;
+            color: #0b7e0b;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .addOn {
+            background: #ccffbd;
+            color: #0b7e0b;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+        }
+
+        footer p {
+            margin: 0.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .menu-section {
+                padding: 1.5rem;
+            }
+
+            .menu-section h2 {
+                font-size: 1.5rem;
+            }
+
+            .item-name {
+                font-size: 1.1rem;
+            }
+
+            .item-price {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header></header>
+
+    <div class="container">
+        <div id="menu-container">
+            <div class="loading">Loading menu...</div>
+        </div>
+    </div>
+
+    <footer></footer>
+
+    <script>
+        function loadTemplate(restaurant) {
+            const header = document.getElementsByTagName('header')[0];
+            header.innerHTML = `<h1>${restaurant.name}</h1>
+                                <p>${restaurant.slogan}</p>`;
+
+            const footer = document.getElementsByTagName('footer')[0];
+            footer.innerHTML = `<p><strong>${restaurant.name}</strong></p>
+                                <p>${restaurant.hours}</p>
+                                <p>${restaurant.location}</p>`;
+            document.title = restaurant.name;
+        }
+
+        async function loadMenu() {
+            const container = document.getElementById('menu-container');
+            
+            try {
+                // Parse YAML data
+                const response = await fetch('menu-cafe.yaml');
+                const yamlText = await response.text();
+                const menuData = jsyaml.load(yamlText);
+                
+                // Clear loading message
+                container.innerHTML = '';
+
+                loadTemplate(menuData.restaurant);
+                
+                // Create menu sections
+                menuData.menu.forEach(section => {
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.className = 'menu-section';
+                    
+                    const sectionTitle = document.createElement('h2');
+                    sectionTitle.textContent = section.category;
+                    sectionDiv.appendChild(sectionTitle);
+                    
+                    const menuGrid = document.createElement('div');
+                    menuGrid.className = 'menu-grid';
+                    
+                    if (section.addOns) {
+                        const addOnDesc = document.createElement('div');
+                        addOnDesc.className = 'item-description';
+                        addOnDesc.textContent = section.addOns.description;
+                        menuGrid.appendChild(addOnDesc);
+                        
+                        if (section.addOns.items && section.addOns.items.length > 0) {
+                            const addOnsDiv = document.createElement('div');
+                            addOnsDiv.className = 'item-tags';
+                            
+                            section.addOns.items.forEach(addOn => {
+                                const addOnSpan = document.createElement('span');
+                                addOnSpan.className = 'addOn';
+                                addOnSpan.textContent = addOn;
+                                addOnsDiv.appendChild(addOnSpan);
+                            });
+                            addOnDesc.appendChild(addOnsDiv);
+                        }
+                    }
+                    
+                    section.items.forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'menu-item';
+                        
+                        const itemHeader = document.createElement('div');
+                        itemHeader.className = 'item-header';
+                        
+                        const itemName = document.createElement('div');
+                        itemName.className = 'item-name';
+                        itemName.textContent = item.name;
+                        
+                        const itemPrice = document.createElement('div');
+                        itemPrice.className = 'item-price';
+                        itemPrice.textContent = item.price;
+                        
+                        itemHeader.appendChild(itemName);
+                        itemHeader.appendChild(itemPrice);
+                        itemDiv.appendChild(itemHeader);
+                        
+                        const itemDesc = document.createElement('div');
+                        itemDesc.className = 'item-description';
+                        itemDesc.textContent = item.description;
+                        itemDiv.appendChild(itemDesc);
+                        
+                        if (item.tags && item.tags.length > 0) {
+                            const tagsDiv = document.createElement('div');
+                            tagsDiv.className = 'item-tags';
+                            
+                            item.tags.forEach(tag => {
+                                const tagSpan = document.createElement('span');
+                                tagSpan.className = 'tag';
+                                tagSpan.textContent = tag;
+                                tagsDiv.appendChild(tagSpan);
+                            });
+                            
+                            itemDiv.appendChild(tagsDiv);
+                        }
+                        
+                        menuGrid.appendChild(itemDiv);
+                    });
+                    
+                    sectionDiv.appendChild(menuGrid);
+                    container.appendChild(sectionDiv);
+                });
+                
+            } catch (error) {
+                container.innerHTML = `<div class="error">Error loading menu: ${error.message}</div>`;
+                console.error('Error loading menu:', error);
+            }
+        }
+
+        // Load menu when page loads
+        loadMenu();
+    </script>
+</body>
+</html>
