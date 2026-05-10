@@ -1,0 +1,22 @@
+restaurant:
+  name: "☕ Mama's Café!"
+  hours: "Open Daily: "
+  location: "📞 (555) 867-5309 | 📍 Mama'House"
+menu:
+  - category: "Coffee"
+    items:
+      - name: "Coffee"
+      - name: "Other Coffee"
+
+  - category: "Decafe"
+    items:
+      - name: "Decafe"
+      - name: "Decafe 2"
+
+  - category: "Tea"
+    items:
+      - name: "Tea"
+
+  - category: "Hot Chocolate"
+    items:
+      - name: "Hot chocolate"
