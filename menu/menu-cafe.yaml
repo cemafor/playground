@@ -7,22 +7,24 @@ menu:
   - category: "Coffee"
     items:
       - name: "Skinnygirl Salted Caramel"
+      - name: "Green Mountain Caramel Vanilla Cream"
       - name: "Warm Hug Caramel Spice"
       - name: "Amaretto"
       - name: "Michigan Cherry"
       - name: "Vanilla Macadamia Nut"
       - name: "Coconut+Mocha"
       - name: "Butter Pecan"
+      - name: "Mint Chip"
       - name: "Café Du Monde Coffee and Chicory"
+      - name: "Bailey's Irish Cream"
+      - name: "Vanilla Bean Bourbon"
 
   - category: "Low-caff"
     items:
       - name: "Green Mountain Half-Caff"
 
-  - category: "Tea"
+  - category: "Other Favorite"
     items:
-      - name: "Chamomile"
-
-  - category: "Hot Chocolate"
-    items:
-      - name: "Hot chocolate"
+      - name: "Milk Chocolate Hot Chocolate"
+      - name: "Chamomile Tea"
+ 
