@@ -41,7 +41,6 @@ menu:
         tags: ["Popular", "Vegetarian"]
         
       - name: "Breakfast Burrito"
-        price: "Comming Soon!"
         description: "Scrambled eggs, sausage, peppers, onion, cheese, and hash browns wrapped in a flour tortilla. Hot sauces available upon request"
         tags: ["Hearty", "Popular"]
 
