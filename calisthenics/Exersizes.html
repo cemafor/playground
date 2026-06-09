@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CalTrack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0C0C0C;
+      --surface:     #161616;
+      --surface-2:   #202020;
+      --border:      #2A2A2A;
+      --accent:      #C8FF33;
+      --accent-dim:  rgba(200, 255, 51, 0.10);
+      --accent-mid:  rgba(200, 255, 51, 0.35);
+      --text:        #F0F0F0;
+      --text-mid:    #999;
+      --text-muted:  #555;
+      --danger:      #FF4D4D;
+      --radius:      8px;
+      --radius-lg:   14px;
+      --font-display: 'Space Grotesk', system-ui, sans-serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Header ───────────────────────────────── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .logo em { color: var(--accent); font-style: normal; }
+
+    .header-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* ── Layout ───────────────────────────────── */
+    .app {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 53px);
+    }
+
+    /* ── Sidebar ──────────────────────────────── */
+    .sidebar {
+      width: 196px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 11px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.12s;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+    .nav-item:hover  { background: var(--surface); }
+    .nav-item.active { background: var(--surface-2); border-color: var(--border); }
+
+    .nav-icon {
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .nav-label {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .nav-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--accent);
+      background: var(--accent-dim);
+      padding: 2px 5px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    /* ── Main panel ───────────────────────────── */
+    .panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 32px 48px;
+    }
+
+    /* ── Section chrome ───────────────────────── */
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.8px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    /* ── Exercise header ──────────────────────── */
+    .ex-header { margin-bottom: 28px; }
+
+    .ex-name {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .ex-summary {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.55;
+      max-width: 480px;
+    }
+
+    /* ── Level blocks ─────────────────────────── */
+    .level-section { margin-bottom: 24px; }
+
+    .level-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .level-blocks {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .lblock {
+      width: 30px;
+      height: 30px;
+      border-radius: 5px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.13s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      user-select: none;
+    }
+    .lblock:hover       { border-color: var(--accent); color: var(--accent); }
+    .lblock.done        { background: var(--accent-dim); border-color: var(--accent-mid); color: var(--accent); }
+    .lblock.current     { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
+
+    .level-nav {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* ── Standard card ────────────────────────── */
+    .standard {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 28px;
+      width: fit-content;
+    }
+
+    .std-cell {
+      padding: 16px 24px;
+      text-align: center;
+    }
+    .std-cell + .std-cell {
+      border-left: 1px solid var(--border);
+    }
+
+    .std-val {
+      font-family: var(--font-mono);
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .std-lbl {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    .std-note {
+      padding: 16px 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-left: 1px solid var(--border);
+      font-style: italic;
+      max-width: 160px;
+      line-height: 1.4;
+    }
+
+    /* ── Buttons ──────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.13s;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+
+    .btn-primary   { background: var(--accent); color: #000; }
+    .btn-primary:hover { background: #d6ff44; }
+
+    .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--text-muted); }
+
+    .btn-ghost     { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--text-muted); }
+
+    /* ── Log form ─────────────────────────────── */
+    .log-section { margin-bottom: 28px; }
+
+    .log-form {
+      margin-top: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+
+    .sets-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .set-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .set-lbl {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      width: 52px;
+      flex-shrink: 0;
+    }
+
+    .set-input {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 7px 10px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 17px;
+      width: 76px;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.13s;
+      -moz-appearance: textfield;
+    }
+    .set-input::-webkit-inner-spin-button,
+    .set-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .set-input:focus { border-color: var(--accent); }
+
+    .set-unit {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .set-remove {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 4px;
+      opacity: 0.5;
+      transition: opacity 0.13s, color 0.13s;
+    }
+    .set-remove:hover { opacity: 1; color: var(--danger); }
+
+    .form-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── History ──────────────────────────────── */
+    .history-section { margin-bottom: 28px; }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+    }
+
+    .h-date {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      width: 60px;
+      flex-shrink: 0;
+    }
+
+    .h-name {
+      font-size: 13px;
+      font-weight: 500;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .h-lvl {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-right: 2px;
+    }
+
+    .h-sets {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .h-del {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 13px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      opacity: 0.35;
+      transition: opacity 0.13s, color 0.13s;
+      flex-shrink: 0;
+    }
+    .h-del:hover { opacity: 1; color: var(--danger); }
+
+    .empty {
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* ── Scrollbar ────────────────────────────── */
+    ::-webkit-scrollbar            { width: 4px; }
+    ::-webkit-scrollbar-track      { background: transparent; }
+    ::-webkit-scrollbar-thumb      { background: var(--border); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover{ background: var(--text-muted); }
+
+    /* ── Mobile ───────────────────────────────── */
+    @media (max-width: 640px) {
+      .app { flex-direction: column; height: auto; overflow: visible; }
+
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 8px 6px;
+        gap: 4px;
+        height: auto;
+      }
+
+      .nav-item {
+        flex-direction: column;
+        gap: 3px;
+        min-width: 68px;
+        padding: 8px 6px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .nav-label { font-size: 12px; }
+      .nav-badge { margin-left: 0; }
+
+      .panel { padding: 20px 16px 40px; }
+      .ex-name { font-size: 22px; }
+      .std-val { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">cal<em>track</em></div>
+  <span class="header-hint">data saved locally in your browser</span>
+</header>
+
+<div class="app">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="panel"  id="panel"></main>
+</div>
+
+<script>
+// ── Exercise data ──────────────────────────────────────────────────────────────
+const EXERCISES = {
+  pushups: {
+    label: 'Pushups', icon: '↓',
+    levels: [
+      { name: 'Wall Pushups',               sets: 3, reps: 50, bothSides: false, summary: 'A classic, gentle pushing movement.' },
+      { name: 'Incline Pushups',            sets: 3, reps: 40, bothSides: false, summary: 'Introducing us to diagonal pushing.' },
+      { name: 'Advanced Incline Pushups',   sets: 3, reps: 35, bothSides: false, summary: 'A lower base prepares our body for horizontal pushing.' },
+      { name: 'Knee Pushups',               sets: 3, reps: 30, bothSides: false, summary: 'Finally touching ground for horizontal pushing.' },
+      { name: 'Full Pushups',               sets: 3, reps: 25, bothSides: false, summary: 'The famous bodyweight pushing movement.' },
+      { name: 'Narrow Pushups',             sets: 3, reps: 20, bothSides: false, summary: 'Preparing our arms for one-arm push movements.' },
+      { name: 'Side-Staggered Pushups',     sets: 2, reps: 20, bothSides: true,  summary: 'Assisted one-arm pushing.' },
+      { name: 'Archer Pushups',             sets: 2, reps: 12, bothSides: true,  summary: '"Shooting" for greatness!' },
+      { name: 'Sliding One-Arm Pushups',    sets: 2, reps: 12, bothSides: true,  summary: 'Sliding our way to success — almost there!' },
+      { name: 'One-Arm Pushups',            sets: 2, reps:  9, bothSides: true,  summary: '"Look Ma, one hand!"' },
+      { name: 'Advanced One-Arm Pushups',   sets: 2, reps:  9, bothSides: true,  summary: 'Takes horizontal one-arm pushing to a new level.' },
+    ]
+  },
+  pullups: {
+    label: 'Pullups', icon: '↑',
+    levels: [
+      { name: 'Wall Pullups',                    sets: 3, reps: 50, bothSides: false, summary: 'The gentlest way to introduce pulling with a full range of motion.' },
+      { name: 'Horizontal Pullups',              sets: 3, reps: 30, bothSides: false, summary: 'Easier than vertical pulling — introduces horizontal pulling.' },
+      { name: 'Advanced Horizontal Pullups',     sets: 3, reps: 25, bothSides: false, summary: 'Pulling from a lower position makes this harder.' },
+      { name: 'Jackknife Pullups',               sets: 3, reps: 20, bothSides: false, summary: 'Vertical pulling with assistance from the legs.' },
+      { name: 'Full Pullups',                    sets: 3, reps: 12, bothSides: false, summary: 'One of the most functional fitness movements. Period.' },
+      { name: 'Narrow Pullups',                  sets: 3, reps:  9, bothSides: false, summary: 'Closer hands increase the work on our arms.' },
+      { name: 'One Hand Pullups',                sets: 2, reps:  9, bothSides: true,  summary: 'Introduces us to one-arm pulling — in a big way.' },
+      { name: 'Advanced One Hand Pullups',       sets: 2, reps:  9, bothSides: true,  summary: 'Moving the hand lower on the forearm substantially increases difficulty.' },
+      { name: 'Archer Pullups',                  sets: 2, reps:  9, bothSides: true,  summary: 'Drills the movement of pulling with one arm.' },
+      { name: 'One Arm Pullups',                 sets: 2, reps:  6, bothSides: false, summary: 'Full range of motion one-arm pulling — rarely seen in commercial gyms.' },
+    ]
+  },
+  squats: {
+    label: 'Squats', icon: '⇅',
+    levels: [
+      { name: 'Jackknife Squats',         sets: 3, reps: 35, bothSides: false, summary: 'The ability to get off the ground is fundamental to mobility.' },
+      { name: 'Assisted Squats',          sets: 3, reps: 30, bothSides: false, summary: 'Continues where Jackknife Squats left off.' },
+      { name: 'Half Squats',              sets: 2, reps: 50, bothSides: false, summary: 'First step squatting full bodyweight without assistance.' },
+      { name: 'Full Squats',              sets: 2, reps: 30, bothSides: false, summary: 'Another calisthenics staple — keeps ankles, hips, and knees healthy.' },
+      { name: 'Narrow Squats',            sets: 2, reps: 30, bothSides: false, summary: 'Amplifies Deep Squat benefits; prepares for one-leg squatting.' },
+      { name: 'Side Staggered Squats',    sets: 2, reps: 20, bothSides: true,  summary: 'Progressions that emphasize one leg more than the other.' },
+      { name: 'Front Staggered Squats',   sets: 2, reps: 15, bothSides: true,  summary: 'Continues progressing towards one-leg squatting.' },
+      { name: 'Assisted One Leg Squats',  sets: 2, reps: 12, bothSides: true,  summary: 'A taste of the raw strength and balance required for one-leg squats.' },
+      { name: 'One Leg Chair Squats',     sets: 2, reps: 12, bothSides: true,  summary: 'Unassisted squatting — starting from the stronger upper range.' },
+      { name: 'One Leg Squats',           sets: 2, reps: 12, bothSides: true,  summary: 'Arguably more functional than bilateral squats. Congratulations!' },
+    ]
+  },
+  legRaises: {
+    label: 'Leg Raises', icon: '/',
+    levels: [
+      { name: 'Knee Raises',                    sets: 2, reps: 30, bothSides: false, summary: 'An introduction to core work that builds solid strength.' },
+      { name: 'Advanced Knee Raises',           sets: 2, reps: 30, bothSides: false, summary: 'Straightening the legs a bit makes this harder.' },
+      { name: 'Alternating Leg Raises',         sets: 2, reps: 25, bothSides: false, summary: 'Introduces us to straight leg raises.' },
+      { name: 'Full Leg Raises',                sets: 2, reps: 25, bothSides: false, summary: 'A calisthenics standard — excellent core and hip flexor strength.' },
+      { name: 'Tuck Plow Raises',               sets: 2, reps: 20, bothSides: false, summary: 'Brings knees to chest — halfway between Leg Raises and Plow Raises.' },
+      { name: 'Plow Raises',                    sets: 2, reps: 20, bothSides: false, summary: 'Legs all the way over the body — an excellent mobility standard.' },
+      { name: 'Hanging Knee Raises',            sets: 2, reps: 15, bothSides: false, summary: 'Time to take leg raises vertical!' },
+      { name: 'Advanced Hanging Knee Raises',   sets: 2, reps: 15, bothSides: false, summary: '45° instead of 90° at the knee — harder.' },
+      { name: 'Hanging Leg Raises',             sets: 2, reps: 25, bothSides: false, summary: 'Straight legs to a right angle — a great strength and mobility feat.' },
+      { name: 'Toe to Bars',                    sets: 2, reps: 25, bothSides: false, summary: 'Toes touch the bar — completes the full range of motion.' },
+    ]
+  },
+  bridge: {
+    label: 'Bridge', icon: '⌒',
+    levels: [
+      { name: 'Glute Bridges',           sets: 3, reps: 50, bothSides: false, summary: 'A gentle introduction to bridging.' },
+      { name: 'Straight Bridges',        sets: 3, reps: 30, bothSides: false, summary: 'Works the entire posterior chain.' },
+      { name: 'Wall Bridges',            sets: 3, reps: 30, bothSides: false, summary: 'The easiest way to introduce back bending.' },
+      { name: 'Incline Bridges',         sets: 2, reps: 25, bothSides: false, summary: 'Lowering the upper body makes this harder.' },
+      { name: 'Head Bridges',            sets: 2, reps: 25, bothSides: false, summary: 'Getting into position is the key challenge here.' },
+      { name: 'Full Bridges',            sets: 2, reps: 15, bothSides: false, summary: 'The full bridge done by calisthenics athletes. Congratulations!' },
+      { name: 'Wheel Bridges',           sets: 2, reps: 15, bothSides: false, summary: 'The months-long process of perfecting your bridge — form an upside-down U.' },
+      { name: 'Tap Bridges',             sets: 2, reps: 30, bothSides: true,  repsNote: 'Per Side, Alternating', summary: 'Gently introduces one-arm bridging.' },
+      { name: 'Wall Walking Bridges',    sets: 2, reps: 10, bothSides: false, summary: 'A wall helps the transition from standing to bridge.' },
+      { name: 'Stand to Stand Bridges',  sets: 2, reps:  5, bothSides: false, summary: 'Leaning back into a perfect Bridge — an advanced mobility feat. Congratulations!' },
+    ]
+  },
+  twist: {
+    label: 'Twist', icon: '↻',
+    isHold: true,
+    levels: [
+      { name: 'Straight Leg Twists', sets: 3, reps: 60, bothSides: true, summary: 'An introduction to twisting — treat it as a mobility exercise.' },
+      { name: 'Bent Leg Twists',     sets: 3, reps: 60, bothSides: true, summary: 'Touching the leg increases the mobility demands.' },
+      { name: 'Full Twists',         sets: 3, reps: 60, bothSides: true, summary: 'Linking arms is an exceptional mobility standard. Congratulations!' },
+    ]
+  }
+};
+
+// ── State ──────────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'caltrack_v1';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return {
+    levels: Object.fromEntries(Object.keys(EXERCISES).map(k => [k, 0])),
+    log: []
+  };
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+let state       = loadState();
+let activeKey   = 'pushups';
+let logging     = false;
+let pendingSets = [];
+
+// ── Sidebar ────────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  document.getElementById('sidebar').innerHTML =
+    Object.entries(EXERCISES).map(([key, ex]) => {
+      const lvl   = state.levels[key];
+      const total = ex.levels.length;
+      return `
+        <div class="nav-item ${key === activeKey ? 'active' : ''}"
+             onclick="pick('${key}')">
+          <span class="nav-icon">${ex.icon}</span>
+          <span class="nav-label">${ex.label}</span>
+          <span class="nav-badge">${lvl + 1}/${total}</span>
+        </div>`;
+    }).join('');
+}
+
+// ── Main panel ─────────────────────────────────────────────────────────────────
+function renderPanel() {
+  const key    = activeKey;
+  const ex     = EXERCISES[key];
+  const li     = state.levels[key];
+  const lv     = ex.levels[li];
+  const isHold = !!ex.isHold;
+  const unit   = isHold ? 'seconds' : 'reps';
+
+  // Level blocks
+  const blocks = ex.levels.map((l, i) => {
+    const cls = i < li ? 'lblock done' : i === li ? 'lblock current' : 'lblock';
+    return `<div class="${cls}" onclick="setLevel('${key}',${i})" title="${l.name}">${i + 1}</div>`;
+  }).join('');
+
+  // Standard display
+  const note = lv.repsNote
+    ? `<div class="std-note">${lv.repsNote}</div>`
+    : lv.bothSides
+      ? `<div class="std-note">Both sides</div>`
+      : '';
+
+  // Log section
+  let logSection;
+  if (logging) {
+    const rows = pendingSets.map((v, i) => `
+      <div class="set-row">
+        <span class="set-lbl">${isHold ? 'Hold' : 'Set'} ${i + 1}</span>
+        <input class="set-input" type="number" min="0" value="${v}"
+               oninput="pendingSets[${i}] = +this.value || 0">
+        <span class="set-unit">${unit}</span>
+        ${pendingSets.length > 1
+          ? `<button class="set-remove" onclick="rmSet(${i})">✕</button>`
+          : ''}
+      </div>`).join('');
+
+    logSection = `
+      <div class="log-form">
+        <div class="sets-list">${rows}</div>
+        <div class="form-actions">
+          <button class="btn btn-secondary" onclick="addSet()">+ Add ${isHold ? 'Hold' : 'Set'}</button>
+          <button class="btn btn-primary"   onclick="saveWorkout()">Save Workout</button>
+          <button class="btn btn-ghost"     onclick="cancelLog()">Cancel</button>
+        </div>
+      </div>`;
+  } else {
+    logSection = `<button class="btn btn-primary" onclick="startLog()">+ Log Workout</button>`;
+  }
+
+  // Recent history (this category)
+  const recent = state.log
+    .filter(w => w.cat === key)
+    .slice()
+    .sort((a, b) => b.ts - a.ts)
+    .slice(0, 10);
+
+  const historyHTML = recent.length === 0
+    ? `<div class="empty">No workouts logged yet — hit <strong>Log Workout</strong> above to get started.</div>`
+    : recent.map(w => {
+        const d    = new Date(w.ts);
+        const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const u    = w.isHold ? 'sec' : 'reps';
+        const sets = w.sets.join(', ');
+        return `
+          <div class="history-item">
+            <span class="h-date">${date}</span>
+            <span class="h-name"><span class="h-lvl">L${w.lvl} ·</span> ${w.name}</span>
+            <span class="h-sets">${w.sets.length}×[${sets}] ${u}</span>
+            <button class="h-del" onclick="delWorkout('${w.id}')" title="Delete">✕</button>
+          </div>`;
+      }).join('');
+
+  document.getElementById('panel').innerHTML = `
+    <div class="ex-header">
+      <div class="eyebrow">${ex.label} · Level ${li + 1} of ${ex.levels.length}</div>
+      <div class="ex-name">${lv.name}</div>
+      <div class="ex-summary">${lv.summary}</div>
+    </div>
+
+    <div class="level-section">
+      <div class="eyebrow">Your Level</div>
+      <div class="level-row">
+        <div class="level-blocks">${blocks}</div>
+      </div>
+      <div class="level-nav">
+        <button class="btn btn-ghost" onclick="setLevel('${key}',${li - 1})"
+                ${li === 0 ? 'disabled' : ''}>← Previous</button>
+        <button class="btn btn-ghost" onclick="setLevel('${key}',${li + 1})"
+                ${li === ex.levels.length - 1 ? 'disabled' : ''}>Next →</button>
+      </div>
+    </div>
+
+    <div class="standard" style="margin-bottom:28px">
+      <div class="std-cell">
+        <div class="std-val">${lv.sets}</div>
+        <div class="std-lbl">${isHold ? 'holds' : 'sets'}</div>
+      </div>
+      <div class="std-cell">
+        <div class="std-val">${lv.reps}</div>
+        <div class="std-lbl">${isHold ? 'seconds' : 'reps'}</div>
+      </div>
+      ${note}
+    </div>
+
+    <div class="log-section">
+      <div class="eyebrow" style="margin-bottom:12px">Log Workout</div>
+      ${logSection}
+    </div>
+
+    <div class="history-section">
+      <div class="eyebrow">Recent Workouts</div>
+      <div class="history-list">${historyHTML}</div>
+    </div>`;
+}
+
+function render() {
+  renderSidebar();
+  renderPanel();
+}
+
+// ── Actions ────────────────────────────────────────────────────────────────────
+function pick(key) {
+  activeKey = key;
+  logging   = false;
+  pendingSets = [];
+  render();
+}
+
+function setLevel(key, i) {
+  const ex = EXERCISES[key];
+  if (i < 0 || i >= ex.levels.length) return;
+  state.levels[key] = i;
+  save();
+  render();
+}
+
+function startLog() {
+  const lv = EXERCISES[activeKey].levels[state.levels[activeKey]];
+  pendingSets = Array(lv.sets).fill(lv.reps);
+  logging = true;
+  render();
+}
+
+function addSet() {
+  const lv = EXERCISES[activeKey].levels[state.levels[activeKey]];
+  pendingSets.push(lv.reps);
+  render();
+}
+
+function rmSet(i) {
+  pendingSets.splice(i, 1);
+  render();
+}
+
+function cancelLog() {
+  logging     = false;
+  pendingSets = [];
+  render();
+}
+
+function saveWorkout() {
+  if (!pendingSets.length) return;
+  const key    = activeKey;
+  const ex     = EXERCISES[key];
+  const li     = state.levels[key];
+  const lv     = ex.levels[li];
+  const isHold = !!ex.isHold;
+
+  state.log.push({
+    id:     Math.random().toString(36).slice(2),
+    ts:     Date.now(),
+    cat:    key,
+    lvl:    li + 1,
+    name:   lv.name,
+    sets:   [...pendingSets],
+    isHold
+  });
+
+  save();
+  logging     = false;
+  pendingSets = [];
+  render();
+}
+
+function delWorkout(id) {
+  state.log = state.log.filter(w => w.id !== id);
+  save();
+  render();
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
