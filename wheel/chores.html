@@ -1,5 +1,3 @@
----
----
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -394,7 +392,7 @@
       </div>
 
       <ul class="task-list" id="today-list"></ul>
-      <div class="limit-note">Short list holds up to 6 tasks.</div>
+      <div class="limit-note">Short list holds up to 20 tasks.</div>
     </section>
 
     <!-- BACKLOG -->
@@ -412,7 +410,7 @@
 
   </div>
 
-  <footer>Tasks are saved automatically to this artifact's storage.</footer>
+  <footer>Tasks save automatically in your browser as you go.</footer>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -426,6 +424,15 @@
   let state = { backlog: [], today: [] };
   let wheelRotation = 0;
   let spinning = false;
+  let hasLocalStorage = false;
+  try{
+    const testKey = '__chore_wheel_test__';
+    window.localStorage.setItem(testKey, '1');
+    window.localStorage.removeItem(testKey);
+    hasLocalStorage = true;
+  }catch(e){
+    hasLocalStorage = false;
+  }
 
   const el = {
     backlogList: document.getElementById('backlog-list'),
@@ -453,28 +460,35 @@
   }
 
   async function saveState(){
-    try{
-      const result = await window.storage.set(STORAGE_KEY, JSON.stringify(state), false);
-      if(!result){ showToast("Couldn't save — try again"); }
-    }catch(e){
-      console.error('Storage save error:', e);
-      showToast("Couldn't save — try again");
+    if(hasLocalStorage){
+      try{
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }catch(e){
+        console.error('localStorage save error:', e);
+        showToast("Couldn't save — try again");
+      }
+      return;
     }
+    // No persistence backend available — state stays in-memory for this session only.
   }
 
   async function loadState(){
-    try{
-      const result = await window.storage.get(STORAGE_KEY, false);
-      if(result && result.value){
-        const parsed = JSON.parse(result.value);
-        if(parsed && Array.isArray(parsed.backlog) && Array.isArray(parsed.today)){
-          state = parsed;
+    if(hasLocalStorage){
+      try{
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if(raw){
+          const parsed = JSON.parse(raw);
+          if(parsed && Array.isArray(parsed.backlog) && Array.isArray(parsed.today)){
+            state = parsed;
+          }
         }
+      }catch(e){
+        console.log('No saved state yet, starting fresh.');
       }
-    }catch(e){
-      // key not found yet — that's fine, use default empty state
-      console.log('No saved state yet, starting fresh.');
+      render();
+      return;
     }
+    console.log('No storage backend available — running in-memory only, changes will not persist after reload.');
     render();
   }
 
