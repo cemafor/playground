@@ -1,0 +1,739 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Chore Wheel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --board: #1e2f27;
+    --board-2: #24382f;
+    --chalk: #f1ede1;
+    --chalk-dim: #b9c4bb;
+    --yellow: #e8c547;
+    --coral: #e0836b;
+    --blue: #7fa8c9;
+    --purple: #b198d9;
+    --line: rgba(241,237,225,0.18);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    background: var(--board);
+    color: var(--chalk);
+    font-family: 'Space Mono', monospace;
+  }
+
+  body{
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.025) 0, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.02) 0, transparent 45%);
+  }
+
+  .app{
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  header{
+    text-align: center;
+    margin-bottom: 34px;
+    padding-bottom: 22px;
+    border-bottom: 2px dashed var(--line);
+  }
+
+  header h1{
+    font-family: 'Kalam', cursive;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5vw, 3.1rem);
+    margin: 0 0 6px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 1px rgba(241,237,225,0.35);
+  }
+
+  header p{
+    margin: 0;
+    color: var(--chalk-dim);
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+  }
+
+  .grid{
+    display: grid;
+    grid-template-columns: minmax(280px, 380px) 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  @media (max-width: 760px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+
+  .panel{
+    background: var(--board-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 22px;
+    position: relative;
+  }
+
+  .panel::before{
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border: 1px dashed rgba(241,237,225,0.08);
+    border-radius: 6px;
+    pointer-events: none;
+  }
+
+  .panel h2{
+    font-family: 'Kalam', cursive;
+    font-size: 1.5rem;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .panel h2 .count{
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--chalk-dim);
+    font-weight: 400;
+  }
+
+  .panel .sub{
+    font-size: 0.78rem;
+    color: var(--chalk-dim);
+    margin: 0 0 18px;
+  }
+
+  /* ---------- wheel ---------- */
+
+  .wheel-wrap{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .wheel-stage{
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin-bottom: 14px;
+  }
+
+  .pointer{
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 11px solid transparent;
+    border-right: 11px solid transparent;
+    border-top: 20px solid var(--yellow);
+    z-index: 5;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4));
+  }
+
+  .wheel{
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    transition: transform 4s cubic-bezier(0.12, 0.72, 0.1, 1);
+    box-shadow: 0 0 0 4px rgba(241,237,225,0.15), 0 6px 18px rgba(0,0,0,0.4);
+  }
+
+  .wheel-center{
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 34px; height: 34px;
+    background: var(--board);
+    border: 2px solid var(--chalk);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+  }
+
+  .wheel-empty{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    color: var(--chalk-dim);
+    font-size: 0.8rem;
+    padding: 0 20px;
+    height: 100%;
+  }
+
+  .spin-btn{
+    font-family: 'Kalam', cursive;
+    font-size: 1.15rem;
+    background: var(--yellow);
+    color: #2a2113;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 26px;
+    cursor: pointer;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    transition: transform 0.12s ease, filter 0.12s ease;
+  }
+  .spin-btn:hover:not(:disabled){ transform: translateY(-1px); filter: brightness(1.08); }
+  .spin-btn:active:not(:disabled){ transform: translateY(0px); }
+  .spin-btn:disabled{ opacity: 0.35; cursor: not-allowed; }
+
+  .winner-card{
+    margin-top: 16px;
+    width: 100%;
+    background: rgba(241,237,225,0.06);
+    border: 1px dashed var(--yellow);
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+    animation: pop 0.3s ease;
+  }
+
+  @keyframes pop{
+    from{ transform: scale(0.9); opacity: 0; }
+    to{ transform: scale(1); opacity: 1; }
+  }
+
+  .winner-card .label{
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    margin-bottom: 4px;
+  }
+
+  .winner-card .task{
+    font-family: 'Kalam', cursive;
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+    word-break: break-word;
+  }
+
+  .winner-actions{
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- lists ---------- */
+
+  .add-row{
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .add-row input{
+    flex: 1;
+    background: rgba(241,237,225,0.05);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: var(--chalk);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+  }
+  .add-row input:focus{
+    outline: none;
+    border-color: var(--blue);
+  }
+  .add-row input::placeholder{ color: var(--chalk-dim); }
+
+  .add-row button{
+    background: var(--blue);
+    color: #17232f;
+    border: none;
+    border-radius: 6px;
+    padding: 0 16px;
+    font-family: 'Kalam', cursive;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  .add-row button:hover{ filter: brightness(1.08); }
+
+  ul.task-list{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  li.task{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(241,237,225,0.04);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 10px 10px 10px 12px;
+    border-left: 3px solid var(--chalk-swatch, var(--blue));
+  }
+
+  li.task .text{
+    flex: 1;
+    font-size: 0.86rem;
+    word-break: break-word;
+    line-height: 1.35;
+  }
+
+  li.task .icon-btn{
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--chalk);
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s ease, border-color 0.12s ease;
+  }
+  li.task .icon-btn:hover{ background: rgba(241,237,225,0.08); }
+
+  li.task .icon-btn.complete:hover{ border-color: #7bc99a; color: #7bc99a; }
+  li.task .icon-btn.move:hover{ border-color: var(--yellow); color: var(--yellow); }
+  li.task .icon-btn.remove:hover{ border-color: var(--coral); color: var(--coral); }
+
+  .empty-state{
+    text-align: center;
+    color: var(--chalk-dim);
+    font-size: 0.82rem;
+    padding: 26px 10px;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+  }
+
+  .limit-note{
+    font-size: 0.72rem;
+    color: var(--chalk-dim);
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  footer{
+    text-align:center;
+    margin-top: 40px;
+    color: var(--chalk-dim);
+    font-size: 0.72rem;
+  }
+
+  .toast{
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--board-2);
+    border: 1px solid var(--line);
+    color: var(--chalk);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 50;
+  }
+  .toast.show{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <h1>The Chore Wheel</h1>
+    <p>Stack your backlog. Spin your short list. Cross things off for good.</p>
+  </header>
+
+  <div class="grid">
+
+    <!-- TODAY / SHORT LIST + WHEEL -->
+    <section class="panel">
+      <h2>Today <span class="count" id="today-count">0 / 6</span></h2>
+      <p class="sub">Pull a few tasks over, then let the wheel choose.</p>
+
+      <div class="wheel-wrap">
+        <div class="wheel-stage">
+          <div class="pointer"></div>
+          <div class="wheel-center"></div>
+          <svg class="wheel" id="wheel" viewBox="0 0 240 240"></svg>
+        </div>
+        <button class="spin-btn" id="spin-btn">Spin the wheel</button>
+        <div class="winner-card" id="winner-card" style="display:none;">
+          <div class="label">Up next</div>
+          <div class="task" id="winner-text"></div>
+          <div class="winner-actions">
+            <button class="spin-btn" id="winner-complete" style="background:#7bc99a;">Mark complete</button>
+          </div>
+        </div>
+      </div>
+
+      <ul class="task-list" id="today-list"></ul>
+      <div class="limit-note">Short list holds up to 6 tasks.</div>
+    </section>
+
+    <!-- BACKLOG -->
+    <section class="panel">
+      <h2>Backlog <span class="count" id="backlog-count">0 tasks</span></h2>
+      <p class="sub">Everything that needs doing eventually.</p>
+
+      <div class="add-row">
+        <input type="text" id="new-task" placeholder="Add a task…" maxlength="140">
+        <button id="add-btn">Add</button>
+      </div>
+
+      <ul class="task-list" id="backlog-list"></ul>
+    </section>
+
+  </div>
+
+  <footer>Tasks are saved automatically to this artifact's storage.</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const COLORS = ['#e8c547', '#e0836b', '#7fa8c9', '#b198d9', '#7bc99a', '#e8a0c5'];
+  const TODAY_LIMIT = 6;
+  const STORAGE_KEY = 'chore-wheel-state';
+
+  let state = { backlog: [], today: [] };
+  let wheelRotation = 0;
+  let spinning = false;
+
+  const el = {
+    backlogList: document.getElementById('backlog-list'),
+    todayList: document.getElementById('today-list'),
+    backlogCount: document.getElementById('backlog-count'),
+    todayCount: document.getElementById('today-count'),
+    newTaskInput: document.getElementById('new-task'),
+    addBtn: document.getElementById('add-btn'),
+    wheel: document.getElementById('wheel'),
+    spinBtn: document.getElementById('spin-btn'),
+    winnerCard: document.getElementById('winner-card'),
+    winnerText: document.getElementById('winner-text'),
+    winnerComplete: document.getElementById('winner-complete'),
+    toast: document.getElementById('toast'),
+  };
+
+  let idCounter = 1;
+  function makeId(){ return 't' + (idCounter++) + '-' + Date.now().toString(36); }
+
+  function showToast(msg){
+    el.toast.textContent = msg;
+    el.toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> el.toast.classList.remove('show'), 1800);
+  }
+
+  async function saveState(){
+    try{
+      const result = await window.storage.set(STORAGE_KEY, JSON.stringify(state), false);
+      if(!result){ showToast("Couldn't save — try again"); }
+    }catch(e){
+      console.error('Storage save error:', e);
+      showToast("Couldn't save — try again");
+    }
+  }
+
+  async function loadState(){
+    try{
+      const result = await window.storage.get(STORAGE_KEY, false);
+      if(result && result.value){
+        const parsed = JSON.parse(result.value);
+        if(parsed && Array.isArray(parsed.backlog) && Array.isArray(parsed.today)){
+          state = parsed;
+        }
+      }
+    }catch(e){
+      // key not found yet — that's fine, use default empty state
+      console.log('No saved state yet, starting fresh.');
+    }
+    render();
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function render(){
+    renderBacklog();
+    renderToday();
+    renderWheel();
+    updateSpinAvailability();
+  }
+
+  function renderBacklog(){
+    el.backlogCount.textContent = state.backlog.length + (state.backlog.length === 1 ? ' task' : ' tasks');
+    el.backlogList.innerHTML = '';
+
+    if(state.backlog.length === 0){
+      el.backlogList.innerHTML = '<div class="empty-state">Nothing waiting. Add a task above.</div>';
+      return;
+    }
+
+    state.backlog.forEach((task, i) => {
+      const li = document.createElement('li');
+      li.className = 'task';
+      li.style.setProperty('--chalk-swatch', COLORS[i % COLORS.length]);
+      const canMove = state.today.length < TODAY_LIMIT;
+      li.innerHTML = `
+        <span class="text">${escapeHtml(task.text)}</span>
+        <button class="icon-btn move" title="Move to today" data-action="to-today" data-id="${task.id}" ${canMove ? '' : 'disabled style="opacity:0.3;cursor:not-allowed;"'}>→</button>
+        <button class="icon-btn complete" title="Mark complete" data-action="complete-backlog" data-id="${task.id}">✓</button>
+        <button class="icon-btn remove" title="Delete" data-action="delete-backlog" data-id="${task.id}">✕</button>
+      `;
+      el.backlogList.appendChild(li);
+    });
+  }
+
+  function renderToday(){
+    el.todayCount.textContent = state.today.length + ' / ' + TODAY_LIMIT;
+    el.todayList.innerHTML = '';
+
+    if(state.today.length === 0){
+      el.todayList.innerHTML = '<div class="empty-state">Your short list is empty. Move a few tasks over from the backlog.</div>';
+      return;
+    }
+
+    state.today.forEach((task, i) => {
+      const li = document.createElement('li');
+      li.className = 'task';
+      li.style.setProperty('--chalk-swatch', COLORS[i % COLORS.length]);
+      li.innerHTML = `
+        <span class="text">${escapeHtml(task.text)}</span>
+        <button class="icon-btn move" title="Back to backlog" data-action="to-backlog" data-id="${task.id}">←</button>
+        <button class="icon-btn complete" title="Mark complete" data-action="complete-today" data-id="${task.id}">✓</button>
+      `;
+      el.todayList.appendChild(li);
+    });
+  }
+
+  function renderWheel(){
+    const svg = el.wheel;
+    svg.innerHTML = '';
+    const n = state.today.length;
+
+    if(n === 0){
+      svg.setAttribute('viewBox', '0 0 240 240');
+      const fo = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+      fo.setAttribute('x', 0); fo.setAttribute('y', 0);
+      fo.setAttribute('width', 240); fo.setAttribute('height', 240);
+      fo.innerHTML = '<div xmlns="http://www.w3.org/1999/xhtml" class="wheel-empty">Add tasks to today\'s list to spin for one.</div>';
+      svg.appendChild(fo);
+      svg.style.borderRadius = '50%';
+      svg.style.background = 'rgba(241,237,225,0.03)';
+      return;
+    }
+
+    svg.style.background = '';
+    const cx = 120, cy = 120, r = 118;
+    const anglePer = 360 / n;
+
+    state.today.forEach((task, i) => {
+      const startAngle = i * anglePer - 90;
+      const endAngle = startAngle + anglePer;
+      const path = describeSlice(cx, cy, r, startAngle, endAngle);
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      pathEl.setAttribute('d', path);
+      pathEl.setAttribute('fill', COLORS[i % COLORS.length]);
+      pathEl.setAttribute('stroke', '#1e2f27');
+      pathEl.setAttribute('stroke-width', '2');
+      svg.appendChild(pathEl);
+
+      // label
+      const midAngle = (startAngle + endAngle) / 2;
+      const labelR = r * 0.62;
+      const rad = (midAngle * Math.PI) / 180;
+      const lx = cx + labelR * Math.cos(rad);
+      const ly = cy + labelR * Math.sin(rad);
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', lx);
+      text.setAttribute('y', ly);
+      text.setAttribute('fill', '#1e2f27');
+      text.setAttribute('font-size', n > 4 ? '9' : '11');
+      text.setAttribute('font-family', 'Space Mono, monospace');
+      text.setAttribute('font-weight', '700');
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('transform', `rotate(${midAngle + 90}, ${lx}, ${ly})`);
+      const label = task.text.length > 14 ? task.text.slice(0, 13) + '…' : task.text;
+      text.textContent = label;
+      svg.appendChild(text);
+    });
+
+    svg.setAttribute('viewBox', '0 0 240 240');
+    svg.style.transform = `rotate(${wheelRotation}deg)`;
+  }
+
+  function describeSlice(cx, cy, r, startAngle, endAngle){
+    const start = polarToCartesian(cx, cy, r, endAngle);
+    const end = polarToCartesian(cx, cy, r, startAngle);
+    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+    return [
+      'M', cx, cy,
+      'L', start.x, start.y,
+      'A', r, r, 0, largeArcFlag, 0, end.x, end.y,
+      'Z'
+    ].join(' ');
+  }
+
+  function polarToCartesian(cx, cy, r, angleDeg){
+    const rad = (angleDeg * Math.PI) / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  }
+
+  function updateSpinAvailability(){
+    el.spinBtn.disabled = state.today.length === 0 || spinning;
+  }
+
+  function spin(){
+    if(spinning || state.today.length === 0) return;
+    spinning = true;
+    el.winnerCard.style.display = 'none';
+    updateSpinAvailability();
+
+    const n = state.today.length;
+    const anglePer = 360 / n;
+    const winnerIndex = Math.floor(Math.random() * n);
+
+    // We want winnerIndex's slice center to end up at the top (pointer at -90deg / 270deg equivalent to 0 at top).
+    // Slice i spans [i*anglePer - 90, (i+1)*anglePer - 90] before rotation, centered at i*anglePer - 90 + anglePer/2.
+    // Pointer is fixed at top (angle -90 in svg coords, i.e. visually 12 o'clock).
+    // After rotating wheel by R degrees, slice center visual angle = center + R.
+    // We want center + R = -90 (mod 360) => R = -90 - center (mod 360)
+    const sliceCenter = winnerIndex * anglePer - 90 + anglePer / 2;
+    let targetMod = (-90 - sliceCenter) % 360;
+    if(targetMod < 0) targetMod += 360;
+
+    const extraSpins = 5 * 360;
+    const currentMod = ((wheelRotation % 360) + 360) % 360;
+    let delta = targetMod - currentMod;
+    if(delta < 0) delta += 360;
+
+    wheelRotation += extraSpins + delta;
+    el.wheel.style.transform = `rotate(${wheelRotation}deg)`;
+
+    setTimeout(() => {
+      spinning = false;
+      updateSpinAvailability();
+      const winner = state.today[winnerIndex];
+      if(winner){
+        el.winnerText.textContent = winner.text;
+        el.winnerCard.style.display = 'block';
+        el.winnerComplete.dataset.id = winner.id;
+      }
+    }, 4100);
+  }
+
+  // ---- event handling ----
+
+  el.addBtn.addEventListener('click', addTask);
+  el.newTaskInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') addTask();
+  });
+
+  function addTask(){
+    const val = el.newTaskInput.value.trim();
+    if(!val) return;
+    state.backlog.push({ id: makeId(), text: val });
+    el.newTaskInput.value = '';
+    render();
+    saveState();
+    el.newTaskInput.focus();
+  }
+
+  el.backlogList.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if(!btn) return;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+
+    if(action === 'to-today'){
+      if(state.today.length >= TODAY_LIMIT) return;
+      const idx = state.backlog.findIndex(t => t.id === id);
+      if(idx === -1) return;
+      const [task] = state.backlog.splice(idx, 1);
+      state.today.push(task);
+      render();
+      saveState();
+    } else if(action === 'complete-backlog'){
+      state.backlog = state.backlog.filter(t => t.id !== id);
+      render();
+      saveState();
+      showToast('Task completed');
+    } else if(action === 'delete-backlog'){
+      state.backlog = state.backlog.filter(t => t.id !== id);
+      render();
+      saveState();
+    }
+  });
+
+  el.todayList.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if(!btn) return;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+
+    if(action === 'to-backlog'){
+      const idx = state.today.findIndex(t => t.id === id);
+      if(idx === -1) return;
+      const [task] = state.today.splice(idx, 1);
+      state.backlog.push(task);
+      el.winnerCard.style.display = 'none';
+      render();
+      saveState();
+    } else if(action === 'complete-today'){
+      state.today = state.today.filter(t => t.id !== id);
+      el.winnerCard.style.display = 'none';
+      render();
+      saveState();
+      showToast('Task completed');
+    }
+  });
+
+  el.spinBtn.addEventListener('click', spin);
+
+  el.winnerComplete.addEventListener('click', () => {
+    const id = el.winnerComplete.dataset.id;
+    state.today = state.today.filter(t => t.id !== id);
+    el.winnerCard.style.display = 'none';
+    render();
+    saveState();
+    showToast('Task completed');
+  });
+
+  loadState();
+})();
+</script>
+
+</body>
+</html>
