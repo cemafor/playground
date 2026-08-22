@@ -1,0 +1,674 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keep It Lit — Streak Tracker</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12160f;
+    --surface: #1b2116;
+    --surface-2: #222a1b;
+    --line: #303a26;
+    --ink: #eee7d6;
+    --ink-dim: #a7a48f;
+    --ember: #d99a3d;
+    --ember-bright: #f2bd63;
+    --leaf: #74985f;
+    --leaf-dim: #2b3323;
+    --radius: 10px;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body{
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(217,154,61,0.08), transparent 45%),
+      radial-gradient(circle at 85% 10%, rgba(116,152,95,0.06), transparent 40%);
+    min-height: 100vh;
+  }
+
+  .wrap{
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .brand{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: 0.01em;
+    color: var(--ink-dim);
+  }
+  .brand span{ color: var(--ember); }
+
+  .edit-name-btn{
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .edit-name-btn:hover{ border-color: var(--ember); color: var(--ember-bright); }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 40px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before{
+    content:"";
+    position:absolute;
+    inset: -40% -10% auto -10%;
+    height: 220px;
+    background: radial-gradient(ellipse at center, rgba(217,154,61,0.14), transparent 70%);
+    pointer-events:none;
+  }
+
+  .task-label{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 0 0 6px;
+  }
+
+  .task-name{
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 24px;
+    margin: 0 0 28px;
+    color: var(--ink);
+  }
+
+  .streak-number{
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: clamp(72px, 18vw, 120px);
+    line-height: 1;
+    margin: 0;
+    color: var(--ember-bright);
+    text-shadow: 0 0 30px rgba(242,189,99,0.25);
+    animation: flicker 5s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .streak-number{ animation: none; }
+  }
+
+  @keyframes flicker{
+    0%, 100% { opacity: 1; text-shadow: 0 0 30px rgba(242,189,99,0.25); }
+    50% { opacity: 0.94; text-shadow: 0 0 42px rgba(242,189,99,0.4); }
+  }
+
+  .streak-caption{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin: 6px 0 28px;
+    letter-spacing: 0.02em;
+  }
+
+  .mark-btn{
+    appearance: none;
+    border: none;
+    border-radius: 999px;
+    padding: 14px 34px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    background: var(--ember);
+    color: #1a1400;
+    transition: transform .12s ease, background .15s ease, box-shadow .15s ease;
+    box-shadow: 0 6px 18px rgba(217,154,61,0.25);
+  }
+  .mark-btn:hover{ background: var(--ember-bright); transform: translateY(-1px); }
+  .mark-btn:active{ transform: translateY(0px) scale(.98); }
+
+  .mark-btn.done{
+    background: var(--surface-2);
+    color: var(--leaf);
+    border: 1px solid var(--leaf);
+    box-shadow: none;
+  }
+  .mark-btn.done:hover{ background: var(--surface-2); color: #9ec987; }
+
+  /* ---------- Stats ---------- */
+  .stats{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 28px 0 36px;
+  }
+  .stat{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 12px;
+    text-align: center;
+  }
+  .stat-value{
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--ink);
+  }
+  .stat-label{
+    font-size: 11px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 520px){
+    .stats{ grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ---------- Grid ---------- */
+  .grid-section{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 24px 20px 20px;
+    overflow-x: auto;
+  }
+
+  .grid-title{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 0 0 16px;
+  }
+
+  .grid-scroller{
+    display: flex;
+    gap: 10px;
+    min-width: min-content;
+  }
+
+  .month-labels{
+    display:flex;
+    gap: 3px;
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+  }
+
+  .weeks{
+    display:flex;
+    gap: 3px;
+  }
+  .week{
+    display:flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .cell{
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: var(--leaf-dim);
+    transition: transform .1s ease;
+  }
+  .cell[data-done="1"]{
+    background: var(--leaf);
+  }
+  .cell[data-today="1"]{
+    box-shadow: 0 0 0 1.5px var(--ember);
+  }
+  .cell.pop{
+    animation: pop .25s ease;
+  }
+  @keyframes pop{
+    0%{ transform: scale(1); }
+    50%{ transform: scale(1.4); }
+    100%{ transform: scale(1); }
+  }
+
+  .legend{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+  }
+  .legend .cell{ width:10px; height:10px; }
+
+  /* ---------- Footer ---------- */
+  footer{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+  }
+  .reset-btn{
+    background:none;
+    border:none;
+    color: var(--ink-dim);
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+  .reset-btn:hover{ color: #c46a5f; }
+
+  /* ---------- Modal (rename) ---------- */
+  .modal-backdrop{
+    position: fixed;
+    inset: 0;
+    background: rgba(10,12,8,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  .modal-backdrop.open{ display:flex; }
+  .modal{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px;
+    width: 100%;
+    max-width: 360px;
+  }
+  .modal h3{
+    font-family: 'Fraunces', serif;
+    margin: 0 0 12px;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .modal input{
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .modal input:focus{ outline: 2px solid var(--ember); outline-offset: 1px; }
+  .modal-actions{
+    display:flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .modal-actions button{
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-cancel{ background: var(--surface-2); color: var(--ink-dim); }
+  .btn-save{ background: var(--ember); color: #1a1400; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="brand">keep it <span>lit</span></div>
+    <button class="edit-name-btn" id="renameBtn">rename task</button>
+  </header>
+
+  <div class="hero">
+    <p class="task-label">tracking</p>
+    <h1 class="task-name" id="taskName">Daily reading</h1>
+    <p class="streak-number" id="streakNumber">0</p>
+    <p class="streak-caption" id="streakCaption">day streak</p>
+    <button class="mark-btn" id="markBtn">Mark today done</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value" id="statLongest">0</div>
+      <div class="stat-label">Longest streak</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-label">Days done</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statRate">0%</div>
+      <div class="stat-label">Completion</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statSince">—</div>
+      <div class="stat-label">Tracking since</div>
+    </div>
+  </div>
+
+  <div class="grid-section">
+    <p class="grid-title">past year</p>
+    <div class="grid-scroller">
+      <div id="monthLabels" class="month-labels"></div>
+    </div>
+    <div class="grid-scroller">
+      <div id="weeksContainer" class="weeks"></div>
+    </div>
+    <div class="legend">
+      <span>less</span>
+      <span class="cell" style="background:var(--leaf-dim)"></span>
+      <span class="cell" style="background:var(--leaf); opacity:.5"></span>
+      <span class="cell" style="background:var(--leaf)"></span>
+      <span>more</span>
+    </div>
+  </div>
+
+  <footer>
+    <span id="footerNote">Stored only in this browser.</span>
+    <button class="reset-btn" id="resetBtn">reset all data</button>
+  </footer>
+
+</div>
+
+<div class="modal-backdrop" id="renameModal">
+  <div class="modal">
+    <h3>Rename your task</h3>
+    <input type="text" id="renameInput" maxlength="60" placeholder="e.g. Stretch for 10 minutes">
+    <div class="modal-actions">
+      <button class="btn-cancel" id="renameCancel">Cancel</button>
+      <button class="btn-save" id="renameSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const STORAGE_NAME = 'streakTracker.taskName';
+  const STORAGE_DATA = 'streakTracker.completions'; // { "YYYY-MM-DD": true }
+
+  const els = {
+    taskName: document.getElementById('taskName'),
+    streakNumber: document.getElementById('streakNumber'),
+    streakCaption: document.getElementById('streakCaption'),
+    markBtn: document.getElementById('markBtn'),
+    statLongest: document.getElementById('statLongest'),
+    statTotal: document.getElementById('statTotal'),
+    statRate: document.getElementById('statRate'),
+    statSince: document.getElementById('statSince'),
+    weeksContainer: document.getElementById('weeksContainer'),
+    monthLabels: document.getElementById('monthLabels'),
+    resetBtn: document.getElementById('resetBtn'),
+    renameBtn: document.getElementById('renameBtn'),
+    renameModal: document.getElementById('renameModal'),
+    renameInput: document.getElementById('renameInput'),
+    renameCancel: document.getElementById('renameCancel'),
+    renameSave: document.getElementById('renameSave'),
+  };
+
+  // ---------- date helpers ----------
+  function toKey(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+  function startOfDay(d){
+    const c = new Date(d);
+    c.setHours(0,0,0,0);
+    return c;
+  }
+  function addDays(d, n){
+    const c = new Date(d);
+    c.setDate(c.getDate()+n);
+    return c;
+  }
+  // Parse a "YYYY-MM-DD" key as a LOCAL date. Using `new Date(str)` directly
+  // would parse it as UTC midnight, which drifts to the wrong calendar day
+  // once converted back to local time in any timezone west of UTC.
+  function parseKey(key){
+    const [y, m, d] = key.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  // ---------- storage ----------
+  function loadTaskName(){
+    return localStorage.getItem(STORAGE_NAME) || 'Daily reading';
+  }
+  function saveTaskName(name){
+    localStorage.setItem(STORAGE_NAME, name);
+  }
+  function loadData(){
+    try{
+      return JSON.parse(localStorage.getItem(STORAGE_DATA)) || {};
+    }catch(e){
+      return {};
+    }
+  }
+  function saveData(data){
+    localStorage.setItem(STORAGE_DATA, JSON.stringify(data));
+  }
+
+  let completions = loadData();
+
+  // ---------- streak math ----------
+  function isDone(dateKey){
+    return !!completions[dateKey];
+  }
+
+  function computeCurrentStreak(){
+    const today = startOfDay(new Date());
+    let cursor = today;
+    // If today isn't marked yet, the streak isn't broken until the day ends —
+    // start counting from yesterday so an unmarked "today" doesn't zero it out.
+    if(!isDone(toKey(today))){
+      cursor = addDays(today, -1);
+    }
+    let streak = 0;
+    while(isDone(toKey(cursor))){
+      streak++;
+      cursor = addDays(cursor, -1);
+    }
+    return streak;
+  }
+
+  function computeLongestStreak(){
+    const keys = Object.keys(completions).filter(k => completions[k]).sort();
+    if(keys.length === 0) return 0;
+    let longest = 1;
+    let run = 1;
+    for(let i=1;i<keys.length;i++){
+      const prev = parseKey(keys[i-1]);
+      const cur = parseKey(keys[i]);
+      const diffDays = Math.round((cur - prev) / 86400000);
+      if(diffDays === 1){
+        run++;
+      } else {
+        run = 1;
+      }
+      longest = Math.max(longest, run);
+    }
+    return longest;
+  }
+
+  function computeStats(){
+    const doneKeys = Object.keys(completions).filter(k => completions[k]);
+    const total = doneKeys.length;
+    let rate = 0;
+    let since = '—';
+    if(total > 0){
+      const sorted = doneKeys.slice().sort();
+      const firstDate = parseKey(sorted[0]);
+      const daysSinceFirst = Math.max(1, Math.round((startOfDay(new Date()) - startOfDay(firstDate)) / 86400000) + 1);
+      rate = Math.round((total / daysSinceFirst) * 100);
+      since = firstDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
+    return { total, rate, since };
+  }
+
+  // ---------- rendering ----------
+  function render(){
+    els.taskName.textContent = loadTaskName();
+
+    const current = computeCurrentStreak();
+    const longest = computeLongestStreak();
+    const stats = computeStats();
+
+    els.streakNumber.textContent = current;
+    els.streakCaption.textContent = current === 1 ? 'day streak' : 'day streak';
+    els.statLongest.textContent = longest;
+    els.statTotal.textContent = stats.total;
+    els.statRate.textContent = stats.rate + '%';
+    els.statSince.textContent = stats.since;
+
+    const todayKey = toKey(startOfDay(new Date()));
+    const doneToday = isDone(todayKey);
+    els.markBtn.textContent = doneToday ? "Today's done ✓" : 'Mark today done';
+    els.markBtn.classList.toggle('done', doneToday);
+
+    renderGrid();
+  }
+
+  function renderGrid(){
+    els.weeksContainer.innerHTML = '';
+    els.monthLabels.innerHTML = '';
+
+    const today = startOfDay(new Date());
+    // End on the Saturday of the current week, start 52 weeks earlier on a Sunday.
+    const endOfWeek = addDays(today, 6 - today.getDay());
+    const totalWeeks = 53;
+    const start = addDays(endOfWeek, -(totalWeeks * 7 - 1));
+    const gridStart = addDays(start, -start.getDay()); // snap to Sunday
+
+    let lastMonth = -1;
+    const monthLabelsFrag = document.createDocumentFragment();
+
+    for(let w=0; w<totalWeeks; w++){
+      const weekEl = document.createElement('div');
+      weekEl.className = 'week';
+
+      const weekStart = addDays(gridStart, w*7);
+      const label = document.createElement('span');
+      label.style.width = '12px';
+      label.style.display = 'inline-block';
+      if(weekStart.getMonth() !== lastMonth && weekStart <= today){
+        label.textContent = weekStart.toLocaleDateString(undefined, { month: 'short' });
+        lastMonth = weekStart.getMonth();
+      } else {
+        label.textContent = '';
+      }
+      monthLabelsFrag.appendChild(label);
+
+      for(let d=0; d<7; d++){
+        const date = addDays(weekStart, d);
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        if(date > today){
+          cell.style.visibility = 'hidden';
+        } else {
+          const key = toKey(date);
+          cell.dataset.done = isDone(key) ? '1' : '0';
+          if(key === toKey(today)) cell.dataset.today = '1';
+          cell.title = `${date.toDateString()} — ${isDone(key) ? 'done' : 'not marked'}`;
+        }
+        weekEl.appendChild(cell);
+      }
+      els.weeksContainer.appendChild(weekEl);
+    }
+    els.monthLabels.appendChild(monthLabelsFrag);
+  }
+
+  // ---------- interactions ----------
+  els.markBtn.addEventListener('click', () => {
+    const todayKey = toKey(startOfDay(new Date()));
+    completions[todayKey] = !completions[todayKey];
+    if(!completions[todayKey]) delete completions[todayKey];
+    saveData(completions);
+    render();
+  });
+
+  els.resetBtn.addEventListener('click', () => {
+    const ok = confirm('This clears every recorded day for this task. This cannot be undone. Continue?');
+    if(ok){
+      completions = {};
+      saveData(completions);
+      render();
+    }
+  });
+
+  els.renameBtn.addEventListener('click', () => {
+    els.renameInput.value = loadTaskName();
+    els.renameModal.classList.add('open');
+    els.renameInput.focus();
+  });
+  els.renameCancel.addEventListener('click', () => {
+    els.renameModal.classList.remove('open');
+  });
+  els.renameModal.addEventListener('click', (e) => {
+    if(e.target === els.renameModal) els.renameModal.classList.remove('open');
+  });
+  els.renameSave.addEventListener('click', () => {
+    const name = els.renameInput.value.trim();
+    if(name){
+      saveTaskName(name);
+      render();
+    }
+    els.renameModal.classList.remove('open');
+  });
+  els.renameInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') els.renameSave.click();
+    if(e.key === 'Escape') els.renameModal.classList.remove('open');
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
