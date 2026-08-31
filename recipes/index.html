@@ -638,7 +638,24 @@ async function init() {
     try {
       res = await fetch(file);
       yamlText = await res.text();
-      loadFromYaml(yamlText, `sample recipe`);
+      //loadFromYaml(yamlText, `sample recipe`);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  list = await fetch(`all.html`);
+  listText = await list.text();
+  console.error(listText);
+  listText = listText.replace(`<p>`,``);
+  console.error(listText);
+  lines = listText.split(`\n`);
+
+  for(const file of lines) {
+    try {
+      res = await fetch(file);
+      yamlText = await res.text();
+      loadFromYaml(yamlText, `sample reciped`);
     } catch (e) {
       console.error(e);
     }
