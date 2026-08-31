@@ -1,12 +1,6 @@
 ---
-layout: default
-title: all recipes
+layout: null
+permalink: /yaml-files.txt
 ---
-{{ $path := .Get "path" }}
-{{ $files := readDir $path}}
-
-{{ range $files }}
-  {{ if strings.HasSuffix .Name ".md" }}
-    {{ .Name }}
-  {{ end }}
-{{ end }}
+{% for file in site.static_files %}{% if file.extname == '.yml' or file.extname == '.yaml' %}{{ file.path }}
+{% endif %}{% endfor %}
